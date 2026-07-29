@@ -1,0 +1,191 @@
+[
+  {
+    "id": "book-001",
+    "page": 17,
+    "section": "3.1 Classification of Carbon Atoms (Degree of Carbon)",
+    "text": "Carbon atoms in alkanes and other organic compounds are classified by the number of other carbon atoms directly bonded to them. A carbon bonded to only one other carbon is called primary (1 degree); bonded to two other carbons, secondary (2 degree); bonded to three other carbons, tertiary (3 degree); and bonded to four other carbons, quaternary (4 degree). This degree-of-carbon classification carries over directly to alcohols: the carbon bearing the -OH group determines whether the alcohol itself is called primary, secondary, or tertiary.",
+    "keywords": ["primary carbon", "secondary carbon", "tertiary carbon", "quaternary carbon", "degree of carbon", "classification of carbon atoms"]
+  },
+  {
+    "id": "book-002",
+    "page": 18,
+    "section": "3.1 Degree of Carbon in Alkyl Halides and Hydrogen Classification",
+    "text": "Hydrogens in a molecule are classified the same way as the carbon they sit on: a primary hydrogen is attached to a primary carbon, a secondary hydrogen to a secondary carbon, and a tertiary hydrogen to a tertiary carbon. The same primary/secondary/tertiary scheme is used for alkyl halides -- for example, chloroethane is a primary alkyl halide, 2-chloropropane is secondary, and 2-chloro-2-methylpropane is tertiary, depending on whether the halogen sits on a 1 degree, 2 degree, or 3 degree carbon. This naming logic (sec-, tert- prefixes) is identical to the one later used for classifying alcohols.",
+    "keywords": ["primary hydrogen", "secondary hydrogen", "tertiary hydrogen", "alkyl halide", "sec-butyl", "tert-butyl", "chloroethane"]
+  },
+  {
+    "id": "book-003",
+    "page": 19,
+    "section": "3.2 Degree of Alcohol -- Primary, Secondary, Tertiary",
+    "text": "The same primary/secondary/tertiary logic used for carbon atoms applies to alcohols, based on how many other carbons are attached to the carbinol carbon (the carbon bearing -OH). Methanol has no attached carbon; a primary alcohol such as butan-1-ol (n-butanol) has one attached carbon; a secondary alcohol such as butan-2-ol (sec-butanol) has two attached carbons; and a tertiary alcohol such as 2-methylpropan-2-ol (tert-butanol) has three attached carbons. A carbinol carbon attached to a quaternary neighbouring carbon, as in 2,2-dimethylpropan-1-ol, is still classified through its own attached-carbon count -- the CH2OH carbon here remains primary even though it sits next to a quaternary carbon.",
+    "keywords": ["primary alcohol", "secondary alcohol", "tertiary alcohol", "carbinol carbon", "tert-butanol", "sec-butanol", "n-butanol", "degree of alcohol"]
+  },
+  {
+    "id": "book-004",
+    "page": 20,
+    "section": "3.2 Solved Examples -- Classifying Alcohols by Degree",
+    "text": "Worked examples classify alcohols by counting the carbons attached to the -OH-bearing carbon. Straight-chain alcohols such as prop-2-en-1-ol and propan-1-ol are primary because the carbinol carbon touches only one other carbon. An alcohol whose -OH carbon is flanked by two carbons is secondary. An alcohol whose -OH carbon is bonded to three separate alkyl groups is tertiary. The chapter also warns that a hydroxyl group on an aromatic ring is a phenol, not an alcohol, even though it looks similar -- phenols are classified and reacted separately from alcohols.",
+    "keywords": ["primary alcohol", "secondary alcohol", "tertiary alcohol", "phenol vs alcohol", "classify alcohol"]
+  },
+  {
+    "id": "book-005",
+    "page": 22,
+    "section": "3.2 Alcohol vs Phenol -- Identifying Secondary Alcohols",
+    "text": "A solved problem asks students to pick out the secondary alcohol from a set of options that include phenol-type structures. The key distinction stressed here is that phenol (a hydroxyl group attached directly to an aromatic ring) is never classified as an alcohol -- primary, secondary or tertiary -- no matter how the ring is substituted. Only sp3 carbinol carbons bearing -OH are classified by degree; the -OH on benzene rings belongs to a separate class of compounds (phenols) with very different acidity and reactivity.",
+    "keywords": ["secondary alcohol", "phenol", "phenol is not alcohol", "carbinol carbon", "aromatic hydroxyl"]
+  },
+  {
+    "id": "book-006",
+    "page": 77,
+    "section": "9.1 Nomenclature of Alcohols -- Where the Name 'Alcohol' Comes From",
+    "text": "The word 'alcohol' is believed to derive from the Arabic al-khwl / al-ghawl, originally referring to a fine metallic powder (kohl) used to darken women's eyelids. The word entered English in the 17th century meaning a 'sublimated' substance, later came to mean the 'pure spirit' of anything, and was first linked specifically to 'spirit of wine' in 1753. Only in 1852 did 'alcohol' become a formal chemical class name. Even today it remains common practice to call CH3CH2OH simply 'alcohol' instead of using its systematic name, ethanol.",
+    "keywords": ["alcohol etymology", "ethanol", "spirit of wine", "history of alcohol name"]
+  },
+  {
+    "id": "book-007",
+    "page": 77,
+    "section": "9.1 IUPAC Priority of the Alcohol Suffix",
+    "text": "When a molecule has more than one functional group, IUPAC rules assign each group a priority for being named as the principal characteristic group (suffix) versus a substituent prefix. Among common groups, the carbonyl (C=O, as in acids/esters/aldehydes/ketones) outranks the hydroxyl (-OH) group, which in turn outranks the amine (-NH2) group, for suffix priority. A carbon-carbon double bond is only given priority over a triple bond when the two are tied in the numbering. The parent hydrocarbon chosen for naming an alcohol must always be the longest continuous chain that contains the -OH-bearing carbon, numbered in the direction that gives the -OH group the lowest possible locant.",
+    "keywords": ["iupac priority", "functional group suffix", "hydroxyl group", "-ol suffix", "parent chain numbering"]
+  },
+  {
+    "id": "book-008",
+    "page": 78,
+    "section": "9.1 Naming Alcohols -- Choosing the Parent Chain",
+    "text": "To name an alcohol, first identify the longest continuous carbon chain that contains the carbon bearing the -OH group -- not simply the longest chain in the whole molecule. For example, in 2-ethylpentan-1-ol the molecule contains a six-carbon chain, but the longest chain that includes the -OH carbon is only five carbons, so it is named as a pentanol with an ethyl substituent. The chain is then numbered from whichever end gives the -OH group the lowest locant; for CH3CH(OH)CH3 this gives propan-2-ol, since it does not matter which end you start counting from in a symmetric chain.",
+    "keywords": ["parent chain", "propan-2-ol", "2-ethylpentan-1-ol", "alcohol nomenclature", "longest chain"]
+  },
+  {
+    "id": "book-009",
+    "page": 78,
+    "section": "9.1 Numbering Rules for Substituted Alcohols",
+    "text": "When both a substituent and the -OH functional group are present, the functional-group suffix always gets the lowest possible locant, even if that gives a substituent a higher number. Worked examples include butan-2-ol from CH3CH(OH)CH2CH3, 3-methylcyclohexanol (not 5-methylcyclohexanol, because numbering must start from the -OH-bearing ring carbon), 3-bromo-1-propanol, 4-chloro-2-butanol, and 4,4-dimethyl-2-pentanol -- in every case the carbon bearing -OH is numbered as low as the ring or chain allows, and the rest of the numbering follows from there.",
+    "keywords": ["butan-2-ol", "3-methylcyclohexanol", "numbering alcohols", "lowest locant", "substituted alcohol"]
+  },
+  {
+    "id": "book-010",
+    "page": 79,
+    "section": "9.1 Naming Diols (Polyols)",
+    "text": "Compounds with two -OH groups are named as diols by inserting the multiplying prefix 'di' before '-ol' and citing a locant for each hydroxyl. Ethane-1,2-diol (common name ethylene glycol) has two -OH groups on adjacent carbons of a two-carbon chain. Propane-1,2-diol has its two hydroxyls on carbons 1 and 2 of a three-carbon chain, and butane-1,4-diol has them at opposite ends of a four-carbon chain. Cyclohexane-1,2-diol follows the same pattern on a six-membered ring, with locants 1 and 2 identifying the ring carbons carrying the -OH groups.",
+    "keywords": ["diol", "ethane-1,2-diol", "propane-1,2-diol", "butane-1,4-diol", "polyol nomenclature", "ethylene glycol"]
+  },
+  {
+    "id": "book-011",
+    "page": 80,
+    "section": "9.1 Common Names vs IUPAC Names of Alcohols",
+    "text": "The chapter's reference table pairs everyday and systematic names for common alcohols: methyl alcohol is methanol; n-propyl alcohol is propan-1-ol and isopropyl alcohol is propan-2-ol; n-butyl alcohol is butan-1-ol, sec-butyl alcohol is butan-2-ol, isobutyl alcohol is 2-methylpropan-1-ol, and tert-butyl alcohol is 2-methylpropan-2-ol. Glycerol, the sweet-tasting triol used in soaps and cosmetics, is systematically propane-1,2,3-triol. These common names remain widely used in everyday and lab contexts even though IUPAC names are unambiguous.",
+    "keywords": ["methanol", "isopropyl alcohol", "tert-butyl alcohol", "glycerol", "propane-1,2,3-triol", "common names of alcohols"]
+  },
+  {
+    "id": "book-012",
+    "page": 80,
+    "section": "9.2 Ethers -- Naming and the 'Alkoxy' Group",
+    "text": "Ethers (R-O-R') contain two alkyl or aryl groups linked through an oxygen, described as an alkoxy substituent (-OR) when named as a prefix. The everyday word 'ether' by itself commonly refers to diethyl ether, a highly flammable solvent boiling at only 35 degrees C that was historically used as an anaesthetic; tetrahydrofuran (THF) is another widely used cyclic ether solvent. Common names for simple ethers are built by listing the two alkyl/aryl groups alphabetically as separate words followed by 'ether' (e.g., CH3OC2H5 is ethylmethyl ether), while IUPAC names treat the smaller alkyl-oxygen unit as an alkoxy substituent on the parent chain (e.g., 1-methoxypropane).",
+    "keywords": ["diethyl ether", "alkoxy group", "ether nomenclature", "tetrahydrofuran", "ethoxyethane", "1-methoxypropane"]
+  },
+  {
+    "id": "book-013",
+    "page": 81,
+    "section": "9.2 Common and IUPAC Names of Ethers",
+    "text": "The chapter tabulates ether names side by side: CH3OCH3 is dimethyl ether (methoxymethane); C2H5OC2H5 is diethyl ether (ethoxyethane); CH3OCH2CH2CH3 is methyl n-propyl ether (1-methoxypropane); C6H5OCH3 is methylphenyl ether or anisole (methoxybenzene); C6H5OCH2CH3 is ethylphenyl ether or phenetole (ethoxybenzene). It also flags a common trap: 'petroleum ether,' despite its name, is not an ether at all but a mixture of low-boiling alkanes used as a lab solvent.",
+    "keywords": ["anisole", "phenetole", "methoxybenzene", "petroleum ether", "ether common names", "dimethyl ether"]
+  },
+  {
+    "id": "book-014",
+    "page": 81,
+    "section": "9.2 Naming Epoxides and Oxetanes",
+    "text": "Epoxides (three-membered cyclic ethers) can be named two ways: as an 'epoxy' substituent giving the locants of the two ring carbons bonded to the epoxide oxygen (e.g., 1,2-epoxypropane), or systematically as derivatives of oxirane, the parent name for ethylene oxide, in which ring numbering starts at the oxygen heteroatom. Four-membered cyclic ethers are called oxetanes; because their ring is strained, oxetanes are more reactive than larger cyclic or open-chain ethers, though less reactive than the more highly strained three-membered oxiranes (epoxides).",
+    "keywords": ["epoxide", "oxirane", "oxetane", "1,2-epoxypropane", "cyclic ether nomenclature", "ethylene oxide"]
+  },
+  {
+    "id": "book-015",
+    "page": 271,
+    "section": "21.1 Alcohols as Lewis Bases",
+    "text": "Under the Lewis acid-base definition, a Lewis base is any species that donates an electron pair, and a Lewis acid accepts one. The oxygen lone pairs on an alcohol (as well as on an ether, aldehyde, or ketone) make these compounds Lewis bases, capable of donating electron density to an electron-deficient Lewis acid such as BF3 or another species with an open sextet or a low-lying empty orbital. This lone-pair-donor behaviour underlies why alcohols can coordinate to metal centres and get protonated under strongly acidic conditions.",
+    "keywords": ["lewis base", "lewis acid", "alcohol lone pair", "electron pair donor", "oxygen lone pairs"]
+  },
+  {
+    "id": "book-016",
+    "page": 295,
+    "section": "21.2 Inductive Effect on the Acidity of Alcohols",
+    "text": "A data table on electron-withdrawing groups shows that replacing hydrogens near the -OH group with more electronegative substituents steadily lowers an alcohol's pKa, i.e., increases its acidity. Electron-withdrawing groups pull electron density away from the O-H bond and, more importantly, help stabilise the resulting alkoxide (RO-) conjugate base once the proton is lost -- so alcohols flanked by strongly electron-withdrawing groups (such as multiple fluorines) are markedly more acidic than simple alkyl alcohols. This is the same additive, distance-dependent inductive effect used elsewhere in the chapter to explain trends in carboxylic acid pKa.",
+    "keywords": ["inductive effect", "alcohol acidity", "pka of alcohol", "electron withdrawing group", "alkoxide stability"]
+  },
+  {
+    "id": "book-017",
+    "page": 295,
+    "section": "21.2 Hybridisation Effect on O-H Acidity",
+    "text": "A second data table compares the acidity of O-H bonds where the oxygen sits on carbons of different hybridisation. Increasing s-character at the attached carbon increases the acidity of the O-H proton, so the trend in pKa (least to most acidic) tracks sp3 less acidic than sp2 less acidic than sp for the carbon bearing the oxygen -- the higher the s-character, the more electronegative that carbon behaves, and the better it stabilises the negative charge left on oxygen after deprotonation.",
+    "keywords": ["hybridisation effect", "s-character", "acidity trend", "sp3 sp2 sp", "o-h bond acidity"]
+  },
+  {
+    "id": "book-018",
+    "page": 295,
+    "section": "21.2 Solved Example -- Comparing Acidic Strength of Substituted Alcohols",
+    "text": "A worked comparison ranks the acidity of several fluorinated alcohols. Ordinary alkyl alcohols are the least acidic; introducing electron-withdrawing CF3 groups near the -OH carbon steadily increases acidity because the inductive pull stabilises the alkoxide conjugate base. The answer key orders four such alcohols by decreasing electron-withdrawing influence near the carbinol carbon, illustrating that acidity increases as more, and closer, fluorine-bearing groups are attached to the carbon holding the hydroxyl.",
+    "keywords": ["cf3 substituent", "alcohol acidity comparison", "inductive effect", "fluorinated alcohol", "conjugate base stability"]
+  },
+  {
+    "id": "book-019",
+    "page": 299,
+    "section": "21.3 Reaction of Alcohols with Active Metals",
+    "text": "Because alcohols are only weak acids, they do not react with weak bases such as amines or bicarbonate ion, and react only to a limited extent with metal hydroxides like NaOH. Alcohols do, however, react readily with alkali metals and with strong bases such as sodium hydride (NaH), sodium amide (NaNH2), and Grignard reagents (RMgX), losing the O-H proton to form an alkoxide salt. For example: CH3OH + NaH gives CH3O(-) Na(+) (sodium methoxide) plus H2, and CH3CH2OH + NaNH2 gives CH3CH2O(-) Na(+) (sodium ethoxide) plus NH3. Alkoxides are named systematically by adding the '-ate' suffix to the alcohol's name -- methanol gives methoxide (methanolate), ethanol gives ethoxide (ethanolate).",
+    "keywords": ["sodium methoxide", "sodium ethoxide", "alkoxide formation", "nah", "nanh2", "grignard reagent", "alcohol reactivity with metals"]
+  },
+  {
+    "id": "book-020",
+    "page": 299,
+    "section": "21.3 tert-Butyl Alcohol Reacting with Potassium Metal",
+    "text": "A worked example shows tert-butyl alcohol (2-methyl-2-propanol) reacting with potassium metal: 2 (CH3)3C-OH + 2 K gives 2 (CH3)3C-OK + H2, producing potassium tert-butoxide (potassium 2-methyl-2-propanolate) and hydrogen gas. This is the general pattern for any alcohol reacting with an alkali metal -- the metal is oxidised, hydrogen gas is evolved, and the alcohol's O-H proton is replaced by the metal to give the corresponding alkoxide salt.",
+    "keywords": ["potassium tert-butoxide", "tert-butyl alcohol", "alcohol plus potassium", "alkoxide salt", "hydrogen gas evolved"]
+  },
+  {
+    "id": "book-021",
+    "page": 303,
+    "section": "21.4 Separating Alcohols from Amines by Extraction",
+    "text": "Alcohols are much less basic than amines, so a dilute aqueous acid wash can separate the two. When cyclohexylamine is treated with aqueous HCl it is protonated to form a water-soluble ammonium salt (cyclohexylammonium chloride), which partitions into the aqueous layer, while cyclohexanol -- which does not get protonated by aqueous HCl -- stays behind in the organic solvent layer (such as CH2Cl2). Draining the two layers from a separatory funnel cleanly separates the amine (now in water, as its salt) from the alcohol (still in the organic solvent), a classic liquid-liquid extraction technique used to purify mixtures of amines and alcohols.",
+    "keywords": ["extraction of amine and alcohol", "cyclohexanol", "cyclohexylamine", "separatory funnel", "liquid-liquid extraction", "alcohol basicity"]
+  },
+  {
+    "id": "book-022",
+    "page": 300,
+    "section": "21.4 Alcohols Do Not React with Sodium Bicarbonate",
+    "text": "Alcohols are weaker acids than carbonic acid (pKa of carbonic acid is around 6.4, versus alcohols typically pKa 16-18), so unlike carboxylic acids or phenols, ordinary alcohols do not react with aqueous sodium bicarbonate (NaHCO3) to release CO2 gas. This distinction is used as a chemical test to separate an alcohol from a carboxylic acid or a sufficiently acidic phenol in a mixture: only the acid strong enough to protonate bicarbonate (pKa well below about 6.4) will fizz with NaHCO3, while the alcohol will not react.",
+    "keywords": ["nahco3 test", "alcohol vs carboxylic acid", "pka comparison", "bicarbonate test", "weak acid alcohol"]
+  },
+  {
+    "id": "book-023",
+    "page": 316,
+    "section": "22.1 Ethyl Alcohol and Dimethyl Ether -- Same Formula, Different Reactivity",
+    "text": "Ethyl alcohol (C2H6O) is a liquid boiling at 78 degrees C, and reacts vigorously with sodium metal -- the metal is consumed, hydrogen gas bubbles off, and a compound of formula C2H5ONa (sodium ethoxide) is left behind. Ethyl alcohol also reacts with hydriodic acid to give water and C2H5I. Dimethyl ether has the exact same molecular formula, C2H6O, and the same molecular weight (46), yet it is a gas boiling at -24 degrees C and does not react at all with sodium metal -- a clear illustration that molecular formula alone does not determine a compound's physical or chemical behaviour; connectivity (structure) does.",
+    "keywords": ["ethyl alcohol", "dimethyl ether", "sodium ethoxide", "c2h6o", "functional isomers", "reaction with sodium metal"]
+  },
+  {
+    "id": "book-024",
+    "page": 318,
+    "section": "22.2 Functional Group Isomerism -- Alcohol vs Ether",
+    "text": "Ethyl alcohol (CH3CH2OH) and dimethyl ether (CH3OCH3) share the molecular formula C2H6O but belong to entirely different functional-group classes -- one is an alcohol, the other an ether -- so they are called functional group isomers. Because they have different functional groups, they have very different physical properties (boiling point, reactivity with sodium, hydrogen-bonding ability) despite containing the identical atoms in the identical proportions. This is one of the clearest illustrations that 'same molecular formula' does not mean 'same compound behaviour.'",
+    "keywords": ["functional group isomerism", "alcohol vs ether isomers", "ethyl alcohol", "dimethyl ether", "same molecular formula different compound"]
+  },
+  {
+    "id": "book-025",
+    "page": 317,
+    "section": "22.3 Chain Isomerism Among Butyl Alcohols",
+    "text": "n-Butyl alcohol (CH3CH2CH2CH2OH) and isobutyl alcohol ((CH3)2CHCH2OH) share the molecular formula C4H10O but differ in the branching pattern of their carbon skeleton -- n-butyl alcohol has a straight four-carbon chain, isobutyl alcohol has a branched three-carbon chain with a methyl branch. Because the difference lies purely in how the carbon chain is arranged (not in the position of the -OH group or the functional group itself), the two are classed as chain isomers, the same category that relates n-pentane, isopentane, and neopentane.",
+    "keywords": ["chain isomerism", "n-butyl alcohol", "isobutyl alcohol", "c4h10o", "branched alcohol isomers"]
+  },
+  {
+    "id": "book-026",
+    "page": 317,
+    "section": "22.4 Position Isomerism -- Propan-1-ol vs Propan-2-ol",
+    "text": "1-Propanol (CH3CH2CH2OH) and 2-propanol (CH3CH(OH)CH3) have the same molecular formula, the same three-carbon chain length, and the same functional group (-OH), differing only in where the hydroxyl group sits along the chain -- carbon 1 versus carbon 2. This makes them position isomers, the same relationship used elsewhere in the chapter to relate 1-chloropropane/2-chloropropane and n-propylamine/isopropylamine: same skeleton and same group, different attachment point.",
+    "keywords": ["position isomerism", "propan-1-ol", "propan-2-ol", "isopropanol", "1-propanol vs 2-propanol"]
+  },
+  {
+    "id": "book-027",
+    "page": 318,
+    "section": "22.5 Functional Group Isomers of Alcohols (General Pattern)",
+    "text": "The chapter generalises the alcohol/ether relationship seen for C2H6O: any saturated open-chain alcohol is the functional-group isomer of some ether with the same molecular formula, since both classes share the general formula CnH(2n+2)O. It also notes the reverse relationship for other functional pairs -- an aldehyde and a ketone can share a formula (functional isomers), as can a carboxylic acid and an ester, or a nitro compound and an alkyl nitrite -- reinforcing that 'same molecular formula, different functional group' is a general isomerism category, not something unique to alcohols and ethers.",
+    "keywords": ["functional group isomers", "alcohol ether isomerism", "aldehyde ketone isomers", "isomerism types", "same formula different group"]
+  }
+]

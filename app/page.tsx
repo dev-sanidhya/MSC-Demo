@@ -1,0 +1,465 @@
+"use client";
+
+import { useCallback, useMemo, useRef, useState } from "react";
+import {
+  DndContext,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
+import { arrayMove } from "@dnd-kit/sortable";
+import { Sidebar } from "@/components/Sidebar";
+import { PaneTree } from "@/components/PaneTree";
+import { VideoPanel } from "@/components/VideoPanel";
+import { BookPanel } from "@/components/BookPanel";
+import { ResizeHandle } from "@/components/ResizeHandle";
+import { bookChunks, relatedBookChunks, relatedVideoChunks, videoChunks } from "@/lib/data";
+import {
+  countLeaves,
+  findLeafById,
+  findLeafBySessionId,
+  getLeafIds,
+  getLeafSessionIds,
+  makeLeaf,
+  makePaneId,
+  removeLeaf,
+  replaceLeafSession,
+  resizeSplitChild,
+  splitLeaf,
+  type PaneNode,
+} from "@/lib/paneTree";
+import type { ChatMessage, ChatSession } from "@/lib/types";
+
+type ChatApiResponse = {
+  content: string;
+  videoChunkId: string | null;
+  bookChunkId: string | null;
+};
+
+function createEmptySession(id: string, title = "New chat"): ChatSession {
+  return { id, title, messages: [], createdAt: Date.now() };
+}
+
+let sessionCounter = 2;
+let messageCounter = 1000;
+
+function deriveTitle(text: string): string {
+  const clean = text.trim().replace(/\s+/g, " ");
+  if (clean.length <= 42) return clean;
+  return `${clean.slice(0, 42).trimEnd()}…`;
+}
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+const SIDEBAR_MIN = 220;
+const SIDEBAR_MAX = 420;
+const RIGHT_MIN = 320;
+const RIGHT_MAX = 640;
+const MAX_PANES = 4;
+
+const FIRST_SESSION_ID = "session-1";
+
+export default function Home() {
+  const [sessions, setSessions] = useState<ChatSession[]>(() => [
+    createEmptySession(FIRST_SESSION_ID),
+  ]);
+  const [paneTree, setPaneTree] = useState<PaneNode>(() => makeLeaf(FIRST_SESSION_ID));
+  const [focusedPaneIdRaw, setFocusedPaneId] = useState<string | null>(
+    () => getLeafIds(makeLeaf(FIRST_SESSION_ID))[0]
+  );
+  const [draggingSessionId, setDraggingSessionId] = useState<string | null>(null);
+
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(288);
+  const [rightWidth, setRightWidth] = useState(420);
+  const [videoPanelHeightPct, setVideoPanelHeightPct] = useState(60);
+  const [thinkingSessionIds, setThinkingSessionIds] = useState<string[]>([]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } })
+  );
+
+  // Derived, not stored: if the tree changed underneath the previously
+  // focused leaf (e.g. it was closed), fall back to the first remaining leaf
+  // without needing a syncing effect.
+  const focusedPaneId = useMemo(() => {
+    const ids = getLeafIds(paneTree);
+    if (focusedPaneIdRaw && ids.includes(focusedPaneIdRaw)) return focusedPaneIdRaw;
+    return ids[0] ?? null;
+  }, [paneTree, focusedPaneIdRaw]);
+
+  const openPaneSessionIds = useMemo(() => getLeafSessionIds(paneTree), [paneTree]);
+  const canSplit = countLeaves(paneTree) < MAX_PANES;
+
+  const focusedSession = useMemo(() => {
+    if (!focusedPaneId) return undefined;
+    const leaf = findLeafById(paneTree, focusedPaneId);
+    return leaf ? sessions.find((s) => s.id === leaf.sessionId) : undefined;
+  }, [paneTree, focusedPaneId, sessions]);
+
+  const showVideo = Boolean(focusedSession?.activeVideoChunkId && !focusedSession.videoDismissed);
+  const showBook = Boolean(focusedSession?.activeBookChunkId && !focusedSession.bookDismissed);
+
+  const activeVideoChunk = useMemo(
+    () => videoChunks.find((c) => c.id === focusedSession?.activeVideoChunkId),
+    [focusedSession]
+  );
+
+  const activeBookChunk = useMemo(
+    () => bookChunks.find((c) => c.id === focusedSession?.activeBookChunkId),
+    [focusedSession]
+  );
+
+  const videoChunkOptions = useMemo(() => relatedVideoChunks(activeVideoChunk), [activeVideoChunk]);
+  const bookChunkOptions = useMemo(() => relatedBookChunks(activeBookChunk), [activeBookChunk]);
+
+  const openInFocusedPane = useCallback(
+    (sessionId: string) => {
+      const existingLeaf = findLeafBySessionId(paneTree, sessionId);
+      if (existingLeaf) {
+        setFocusedPaneId(existingLeaf.id);
+        return;
+      }
+      const targetLeafId = (focusedPaneId && findLeafById(paneTree, focusedPaneId)?.id) ?? getLeafIds(paneTree)[0];
+      if (!targetLeafId) return;
+      setPaneTree((tree) => replaceLeafSession(tree, targetLeafId, sessionId));
+      setFocusedPaneId(targetLeafId);
+    },
+    [paneTree, focusedPaneId]
+  );
+
+  const handleNewChat = useCallback(() => {
+    const id = `session-${sessionCounter++}`;
+    const session = createEmptySession(id);
+    setSessions((prev) => [session, ...prev]);
+    openInFocusedPane(id);
+  }, [openInFocusedPane]);
+
+  const handleSelect = useCallback(
+    (id: string) => {
+      openInFocusedPane(id);
+    },
+    [openInFocusedPane]
+  );
+
+  const handleRename = useCallback((id: string, title: string) => {
+    setSessions((prev) => prev.map((s) => (s.id === id ? { ...s, title } : s)));
+  }, []);
+
+  const handleDeleteSession = useCallback(
+    (id: string) => {
+      const remaining = sessions.filter((s) => s.id !== id);
+      const nextSessions =
+        remaining.length > 0 ? remaining : [createEmptySession(`session-${sessionCounter++}`)];
+      const fallbackId = nextSessions[0].id;
+
+      setSessions(nextSessions);
+      setPaneTree((tree) => {
+        let nextTree = tree;
+        for (const leafId of getLeafIds(tree)) {
+          if (findLeafById(nextTree, leafId)?.sessionId === id) {
+            nextTree = replaceLeafSession(nextTree, leafId, fallbackId);
+          }
+        }
+        return nextTree;
+      });
+    },
+    [sessions]
+  );
+
+  const handleClosePane = useCallback((leafId: string) => {
+    setPaneTree((tree) => (countLeaves(tree) <= 1 ? tree : removeLeaf(tree, leafId)));
+  }, []);
+
+  const handleResizeSplit = useCallback((splitId: string, index: number, deltaPercent: number) => {
+    setPaneTree((tree) => resizeSplitChild(tree, splitId, index, deltaPercent));
+  }, []);
+
+  const handleSelectVideoChunk = useCallback(
+    (id: string) => {
+      if (!focusedSession) return;
+      const sessionId = focusedSession.id;
+      setSessions((prev) =>
+        prev.map((s) => (s.id === sessionId ? { ...s, activeVideoChunkId: id, videoDismissed: false } : s))
+      );
+    },
+    [focusedSession]
+  );
+
+  const handleSelectBookChunk = useCallback(
+    (id: string) => {
+      if (!focusedSession) return;
+      const sessionId = focusedSession.id;
+      setSessions((prev) =>
+        prev.map((s) => (s.id === sessionId ? { ...s, activeBookChunkId: id, bookDismissed: false } : s))
+      );
+    },
+    [focusedSession]
+  );
+
+  const handleCloseVideoPanel = useCallback(() => {
+    if (!focusedSession) return;
+    const sessionId = focusedSession.id;
+    setSessions((prev) => prev.map((s) => (s.id === sessionId ? { ...s, videoDismissed: true } : s)));
+  }, [focusedSession]);
+
+  const handleCloseBookPanel = useCallback(() => {
+    if (!focusedSession) return;
+    const sessionId = focusedSession.id;
+    setSessions((prev) => prev.map((s) => (s.id === sessionId ? { ...s, bookDismissed: true } : s)));
+  }, [focusedSession]);
+
+  const handleOpenVideo = useCallback((sessionId: string) => {
+    setSessions((prev) =>
+      prev.map((s) =>
+        s.id === sessionId
+          ? { ...s, videoDismissed: false, activeVideoChunkId: s.activeVideoChunkId ?? videoChunks[0]?.id }
+          : s
+      )
+    );
+  }, []);
+
+  const handleOpenBook = useCallback((sessionId: string) => {
+    setSessions((prev) =>
+      prev.map((s) =>
+        s.id === sessionId
+          ? { ...s, bookDismissed: false, activeBookChunkId: s.activeBookChunkId ?? bookChunks[0]?.id }
+          : s
+      )
+    );
+  }, []);
+
+  const asideRef = useRef<HTMLDivElement>(null);
+
+  const handleSidebarResize = useCallback((delta: number) => {
+    setSidebarWidth((w) => clamp(w + delta, SIDEBAR_MIN, SIDEBAR_MAX));
+  }, []);
+
+  const handleRightResize = useCallback((delta: number) => {
+    setRightWidth((w) => clamp(w - delta, RIGHT_MIN, RIGHT_MAX));
+  }, []);
+
+  const handleVerticalSplitResize = useCallback((delta: number) => {
+    const containerHeight = asideRef.current?.clientHeight ?? 800;
+    setVideoPanelHeightPct((pct) => clamp(pct + (delta / containerHeight) * 100, 25, 80));
+  }, []);
+
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setDraggingSessionId(String(event.active.id));
+  }, []);
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      setDraggingSessionId(null);
+      const { active, over } = event;
+      if (!over) return;
+
+      const overData = over.data.current as
+        | { type?: string; leafId?: string; edge?: "left" | "right" | "top" | "bottom" | "center" }
+        | undefined;
+
+      if (overData?.type === "pane-edge" && overData.leafId && overData.edge) {
+        const sessionId = String(active.id);
+        const { leafId, edge } = overData;
+
+        if (edge === "center") {
+          setPaneTree((tree) => replaceLeafSession(tree, leafId, sessionId));
+          setFocusedPaneId(leafId);
+          return;
+        }
+
+        setPaneTree((tree) => {
+          if (countLeaves(tree) >= MAX_PANES) return tree;
+          const direction = edge === "left" || edge === "right" ? "row" : "column";
+          const position = edge === "left" || edge === "top" ? "before" : "after";
+          const newLeafId = makePaneId();
+          const next = splitLeaf(tree, leafId, direction, newLeafId, sessionId, position);
+          setFocusedPaneId(newLeafId);
+          return next;
+        });
+        return;
+      }
+
+      // Otherwise this is a sidebar reorder drag.
+      if (active.id === over.id) return;
+      const oldIndex = sessions.findIndex((s) => s.id === active.id);
+      const newIndex = sessions.findIndex((s) => s.id === over.id);
+      if (oldIndex === -1 || newIndex === -1) return;
+      setSessions((prev) => arrayMove(prev, oldIndex, newIndex));
+    },
+    [sessions]
+  );
+
+  const handleSend = useCallback((sessionId: string, text: string) => {
+    const userMessage: ChatMessage = {
+      id: `msg-${messageCounter++}`,
+      role: "user",
+      content: text,
+      createdAt: Date.now(),
+    };
+
+    setSessions((prev) =>
+      prev.map((s) => {
+        if (s.id !== sessionId) return s;
+        const isFirstMessage = s.messages.length === 0;
+        return {
+          ...s,
+          title: isFirstMessage ? deriveTitle(text) : s.title,
+          messages: [...s.messages, userMessage],
+        };
+      })
+    );
+
+    setThinkingSessionIds((prev) => [...prev, sessionId]);
+
+    fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text }),
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(
+            (err as { error?: string }).error || `Request failed (${res.status})`
+          );
+        }
+        return res.json() as Promise<ChatApiResponse>;
+      })
+      .then((reply) => {
+        const assistantMessage: ChatMessage = {
+          id: `msg-${messageCounter++}`,
+          role: "assistant",
+          content: reply.content,
+          createdAt: Date.now(),
+          videoChunkId: reply.videoChunkId ?? undefined,
+          bookChunkId: reply.bookChunkId ?? undefined,
+        };
+
+        setSessions((prev) =>
+          prev.map((s) =>
+            s.id === sessionId
+              ? {
+                  ...s,
+                  messages: [...s.messages, assistantMessage],
+                  activeVideoChunkId: reply.videoChunkId ?? s.activeVideoChunkId,
+                  activeBookChunkId: reply.bookChunkId ?? s.activeBookChunkId,
+                  videoDismissed: reply.videoChunkId ? false : s.videoDismissed,
+                  bookDismissed: reply.bookChunkId ? false : s.bookDismissed,
+                }
+              : s
+          )
+        );
+      })
+      .catch((err: Error) => {
+        const errorMessage: ChatMessage = {
+          id: `msg-${messageCounter++}`,
+          role: "assistant",
+          content: `Sorry, something went wrong reaching the AI backend: ${err.message}`,
+          createdAt: Date.now(),
+        };
+        setSessions((prev) =>
+          prev.map((s) => (s.id === sessionId ? { ...s, messages: [...s.messages, errorMessage] } : s))
+        );
+      })
+      .finally(() => {
+        setThinkingSessionIds((prev) => prev.filter((id) => id !== sessionId));
+      });
+  }, []);
+
+  const showAside = showVideo || showBook;
+
+  return (
+    <DndContext
+      id="app-dnd"
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
+      onDragCancel={() => setDraggingSessionId(null)}
+    >
+      <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
+        <Sidebar
+          sessions={sessions}
+          activeSessionId={focusedSession?.id ?? ""}
+          openPaneIds={openPaneSessionIds}
+          collapsed={sidebarCollapsed}
+          width={sidebarWidth}
+          onToggleCollapsed={() => setSidebarCollapsed((v) => !v)}
+          onSelect={handleSelect}
+          onNew={handleNewChat}
+          onRename={handleRename}
+          onDelete={handleDeleteSession}
+        />
+
+        {!sidebarCollapsed && <ResizeHandle onResize={handleSidebarResize} />}
+
+        <main className="flex min-w-0 flex-1">
+          <PaneTree
+            node={paneTree}
+            sessions={sessions}
+            focusedPaneId={focusedPaneId}
+            thinkingSessionIds={thinkingSessionIds}
+            isDraggingSession={draggingSessionId !== null}
+            canSplit={canSplit}
+            onSend={handleSend}
+            onFocusPane={setFocusedPaneId}
+            onClosePane={handleClosePane}
+            onOpenVideo={handleOpenVideo}
+            onOpenBook={handleOpenBook}
+            onResizeSplit={handleResizeSplit}
+          />
+
+          {showAside && (
+            <>
+              <ResizeHandle onResize={handleRightResize} />
+
+              <aside
+                ref={asideRef}
+                style={{ width: rightWidth }}
+                className="flex shrink-0 flex-col border-l border-border-subtle bg-surface/60"
+              >
+                {showVideo && (
+                  <div
+                    style={{ height: showBook ? `${videoPanelHeightPct}%` : "100%" }}
+                    className="flex min-h-0 flex-col overflow-y-auto"
+                  >
+                    <VideoPanel
+                      chunk={activeVideoChunk}
+                      chunks={videoChunkOptions}
+                      onSelect={handleSelectVideoChunk}
+                      onClose={handleCloseVideoPanel}
+                    />
+                  </div>
+                )}
+
+                {showVideo && showBook && (
+                  <ResizeHandle orientation="horizontal" onResize={handleVerticalSplitResize} />
+                )}
+
+                {showBook && (
+                  <div
+                    style={{ height: showVideo ? `${100 - videoPanelHeightPct}%` : "100%" }}
+                    className="flex min-h-0 flex-col border-t border-border-subtle first:border-t-0"
+                  >
+                    <BookPanel
+                      chunk={activeBookChunk}
+                      chunks={bookChunkOptions}
+                      onSelect={handleSelectBookChunk}
+                      onClose={handleCloseBookPanel}
+                    />
+                  </div>
+                )}
+              </aside>
+            </>
+          )}
+        </main>
+      </div>
+    </DndContext>
+  );
+}
