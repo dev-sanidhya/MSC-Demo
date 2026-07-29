@@ -18,7 +18,19 @@
 export const KEYWORD_DICTIONARY = [
   { keyword: "lucas test", label: "Lucas Test", patterns: ["lucas", "लुकास"] },
   { keyword: "victor meyer test", label: "Victor Meyer Test", patterns: ["victor meyer", "विक्टर मेयर", "विक्टर मायर"] },
-  { keyword: "grignard reagent", label: "Grignard Reagent", patterns: ["grignard", "ग्रिगनार्ड", "ग्रिनार्ड", "ग्रिग्नार्ड", "ग्रीन्यार्ड"] },
+  {
+    keyword: "grignard reagent",
+    label: "Grignard Reagent",
+    // Real ASR output on the dedicated Grignard playlist drops the initial
+    // "g" almost entirely ("रिगना" is the dominant transliteration, 30-100+
+    // hits per lecture) and the two short concept clips spell it in Latin
+    // script with typos ("rignard", "rignore", "rignar") - keeping the
+    // original guessed patterns too since they may still occur elsewhere.
+    patterns: [
+      "grignard", "ग्रिगनार्ड", "ग्रिनार्ड", "ग्रिग्नार्ड", "ग्रीन्यार्ड",
+      "रिगना", "रिगिड", "रेजिना", "rignard", "rignore", "rignar",
+    ],
+  },
   { keyword: "williamson ether synthesis", label: "Williamson Ether Synthesis", patterns: ["williamson", "विलियमसन", "विलियम्सन"] },
   { keyword: "markovnikov", label: "Markovnikov's Rule", patterns: ["markovnikov", "मार्कोनिकोव", "मार्कोवनिकोव", "मार्कोनीकोव"] },
   { keyword: "anti-markovnikov", label: "Anti-Markovnikov Addition", patterns: ["anti markovnikov", "एंटी मार्कोनिकोव", "एंटी-मार्कोनिकोव"] },
@@ -46,6 +58,21 @@ export const KEYWORD_DICTIONARY = [
   { keyword: "rearrangement", label: "Carbocation Rearrangement", patterns: ["rearrangement", "रिएरेंजमेंट", "रिअरेंजमेंट"] },
   { keyword: "wagner meerwein rearrangement", label: "Wagner-Meerwein Rearrangement", patterns: ["wagner meerwein", "वैगनर मीरवाइन", "वेगनर मीरवाइन"] },
   { keyword: "hofmann elimination", label: "Hofmann Elimination", patterns: ["hofmann", "हॉफमैन", "हॉफमन"] },
+  {
+    keyword: "conjugate addition",
+    label: "Conjugate Addition vs Direct Addition",
+    patterns: ["conjugate addition", "कॉन्जुगेट एडिशन", "कन्ज्यूगेट एडिशन", "डायरेक्ट एडिशन", "direct addition"],
+  },
+  {
+    keyword: "copper nucleophile",
+    label: "Copper(I) Salt Effect on Grignard",
+    patterns: ["कॉपर", "copper", "cuprate", "क्यूप्रेट"],
+  },
+  {
+    keyword: "epoxide ring opening",
+    label: "Grignard + Epoxide Ring Opening",
+    patterns: ["epoxide", "एपॉक्साइड", "इपॉक्साइड"],
+  },
   { keyword: "aldehyde", label: "Aldehyde", patterns: ["aldehyde", "एल्डिहाइड"] },
   { keyword: "ketone", label: "Ketone", patterns: ["ketone", "कीटोन"] },
   { keyword: "ether", label: "Ether", patterns: ["ether", "ईथर"] },

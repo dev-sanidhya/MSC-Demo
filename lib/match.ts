@@ -29,8 +29,12 @@ function expandedQuerySet(tokens: string[]): Set<string> {
   return set;
 }
 
+// Deduped: a title that happens to repeat a word (e.g. "Oxidation of
+// Alcohol — Primary Alcohol — Secondary Alcohol" says "alcohol" three
+// times) must not collect that word's title bonus three times over.
 function titleTokens(text: string): string[] {
-  return normalize(text).filter((t) => t.length > 2 && !STOPWORDS.has(t));
+  const tokens = normalize(text).filter((t) => t.length > 2 && !STOPWORDS.has(t));
+  return Array.from(new Set(tokens));
 }
 
 // Terms that are semantically chapter-wide (every chunk in an "Alcohols"

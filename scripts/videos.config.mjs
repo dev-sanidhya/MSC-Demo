@@ -64,4 +64,52 @@ export const VIDEOS = [
     title: "Alcohol Revision Class Test-03 | OC | MS Chouhan Sir",
     durationSeconds: 939, // 15:39
   },
+
+  // Grignard reagent playlist (channel's own "Girgnard Reagent (Theory+Quiz)"
+  // playlist, PLlMhK1sFs6cXLbHg76yi10F8I2e2e6yws) — added because Grignard
+  // reagent (RMgX + carbonyl -> alcohol) is a JEE-relevant way to make
+  // alcohols but is never discussed in the 10 "Alcohol" videos above; it's
+  // covered in this separate playlist on the same channel instead.
+  {
+    videoId: "gzrmZu5nf4I",
+    lecture: "Grignard Lecture #1",
+    title: "Grignard Reagent | Lecture -1 | Hindi | IIT JEE ADVANCED | OC | MS Chouhan Sir",
+    durationSeconds: 4529, // 1:15:29
+  },
+  {
+    videoId: "SnWpYt0TYIU",
+    lecture: "Grignard Lecture #2",
+    title: "Grignard Reagent | Lecture -2 | Hindi | IIT JEE ADVANCED | OC | MS Chouhan Sir",
+    durationSeconds: 3866, // 1:04:26
+  },
+  {
+    videoId: "fboCLjfzqM8",
+    lecture: "Grignard Lecture #3",
+    title: "Grignard Reagent | Lecture -3 | Hindi | IIT JEE ADVANCED | OC | MS Chouhan Sir",
+    durationSeconds: 4424, // 1:13:44
+  },
+  {
+    videoId: "iup4g5BXL6Q",
+    lecture: "Grignard Lecture #4",
+    title: "Grignard Reagent | Lecture -4 | Hindi | IIT JEE ADVANCED | OC | MS Chouhan Sir",
+    durationSeconds: 4167, // 1:09:27
+  },
+  {
+    videoId: "xbOliG616QU",
+    lecture: "Grignard Lecture #5",
+    title: "Grignard Reagent | Lecture -5 | Hindi | IIT JEE ADVANCED | OC | MS Chouhan Sir",
+    durationSeconds: 4274, // 1:11:14
+  },
+  {
+    videoId: "GigN3bp-H3o",
+    lecture: "Grignard Concept Clip",
+    title: "Grignard Formation? | Advanced Level Concept Series (Organic Chemistry) by MS CHOUHAN",
+    durationSeconds: 160, // 2:40
+  },
+  {
+    videoId: "emKP5G6JWYs",
+    lecture: "Copper Salt Effect Clip",
+    title: "Copper (I) Salt Effect? Advanced Level Concept Series (Organic Chemistry) by MS CHOUHAN",
+    durationSeconds: 339, // 5:39
+  },
 ];
