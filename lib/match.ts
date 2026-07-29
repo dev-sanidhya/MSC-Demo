@@ -33,27 +33,92 @@ function titleTokens(text: string): string[] {
   return normalize(text).filter((t) => t.length > 2 && !STOPWORDS.has(t));
 }
 
+// Terms that are semantically chapter-wide (every chunk in an "Alcohols"
+// pool touches primary/secondary/tertiary classification, or aldehydes and
+// ketones as reaction products) even when the auto-tagging pipeline only
+// happened to attach them to a handful of chunks. Raw document-frequency
+// from a small, unevenly-tagged corpus is too noisy to trust for these —
+// domain knowledge says they should never be a strong signal, so they're
+// pinned to a low fixed weight instead of computed IDF.
+const GENERIC_KEYWORDS = new Set([
+  "primary alcohol", "secondary alcohol", "tertiary alcohol", "alcohol",
+  "aldehyde", "ketone", "mechanism", "reagent", "stability",
+  "reaction intermediate", "sn1 mechanism", "sn2 mechanism",
+]);
+const GENERIC_KEYWORD_WEIGHT = 0.6;
+
 /**
- * Scores a chunk against a student's question using two signals: explicit
- * keyword/phrase hits (strongest) plus overlap with the chunk's own
- * topic/section title (breaks ties toward the chunk that's actually "about"
- * what was asked, rather than whichever chunk happens first in the array).
+ * Inverse-document-frequency weight per keyword, computed over the pool
+ * being searched: a keyword that shows up on nearly every chunk is nearly
+ * useless for distinguishing which chunk is relevant, so it should count
+ * for far less than a keyword that only appears on 2-3 chunks (e.g. "lucas
+ * test", "williamson"). Without this, a chunk tagged with many broad,
+ * generic keywords wins by sheer volume regardless of whether it's
+ * actually on-topic.
  */
-function score(queryTokens: string[], querySet: Set<string>, keywords: string[], title: string): number {
-  const queryJoined = queryTokens.join(" ");
-  let total = 0;
-  for (const kw of keywords.map((k) => k.toLowerCase())) {
-    if (kw.includes(" ")) {
-      if (queryJoined.includes(kw)) total += 4;
-    } else if (querySet.has(kw)) {
-      total += 2;
+function buildIdf(chunks: { keywords: string[] }[]): Map<string, number> {
+  const docFreq = new Map<string, number>();
+  for (const c of chunks) {
+    for (const kw of new Set(c.keywords.map((k) => k.toLowerCase()))) {
+      docFreq.set(kw, (docFreq.get(kw) ?? 0) + 1);
     }
   }
+  const n = Math.max(chunks.length, 1);
+  const idf = new Map<string, number>();
+  for (const [kw, freq] of docFreq) {
+    if (GENERIC_KEYWORDS.has(kw)) {
+      idf.set(kw, GENERIC_KEYWORD_WEIGHT);
+      continue;
+    }
+    idf.set(kw, Math.max(Math.log((n + 1) / (freq + 0.5)), 0.05));
+  }
+  return idf;
+}
+
+/**
+ * Scores a chunk against a student's question: explicit keyword/phrase hits
+ * (weighted by rarity via idf) plus overlap with the chunk's own
+ * topic/section title, which breaks ties toward the chunk that's actually
+ * "about" what was asked rather than whichever chunk has the most keywords.
+ */
+// Only the top N keyword hits count. Without this, a chunk that happens to
+// be tagged with several co-occurring classification terms (e.g. "primary
+// alcohol" + "secondary alcohol" + "tertiary alcohol" + "aldehyde" +
+// "ketone" all at once) racks up matches on breadth alone and out-scores a
+// chunk with just one genuinely specific, on-topic keyword — capping keeps
+// precision competitive with volume.
+const MAX_SCORED_KEYWORD_HITS = 2;
+
+function score(
+  queryTokens: string[],
+  querySet: Set<string>,
+  keywords: string[],
+  title: string,
+  idf: Map<string, number>
+): { total: number; hasKeywordHit: boolean } {
+  const queryJoined = queryTokens.join(" ");
+  const hits: number[] = [];
+  for (const kw of keywords.map((k) => k.toLowerCase())) {
+    const weight = idf.get(kw) ?? 1;
+    if (kw.includes(" ")) {
+      if (queryJoined.includes(kw)) hits.push(4 * weight);
+    } else if (querySet.has(kw)) {
+      hits.push(2 * weight);
+    }
+  }
+  hits.sort((a, b) => b - a);
+  let total = hits.slice(0, MAX_SCORED_KEYWORD_HITS).reduce((a, b) => a + b, 0);
   for (const word of titleTokens(title)) {
     if (querySet.has(word)) total += 1;
   }
-  return total;
+  return { total, hasKeywordHit: hits.length > 0 };
 }
+
+// A chunk only counts as "relevant" if it scored at least one real tagged
+// keyword hit (not just incidental title-word overlap) and clears this
+// floor — otherwise we'd rather show no clip/no excerpt than a confidently
+// wrong one for a topic this content pool genuinely doesn't cover.
+const MIN_RELEVANT_SCORE = 3;
 
 export function findBestVideoChunk(
   query: string,
@@ -63,15 +128,17 @@ export function findBestVideoChunk(
   if (chunks.length === 0) return fallback;
   const tokens = normalize(query);
   const querySet = expandedQuerySet(tokens);
+  const idf = buildIdf(chunks);
   let best: VideoChunk | undefined;
   let bestScore = 0;
   for (const chunk of chunks) {
-    const s = score(tokens, querySet, chunk.keywords, chunk.topic);
-    if (s > bestScore) {
-      bestScore = s;
+    const { total, hasKeywordHit } = score(tokens, querySet, chunk.keywords, chunk.topic, idf);
+    if (hasKeywordHit && total > bestScore) {
+      bestScore = total;
       best = chunk;
     }
   }
+  if (bestScore < MIN_RELEVANT_SCORE) return fallback;
   return best ?? fallback;
 }
 
@@ -83,15 +150,17 @@ export function findBestBookChunk(
   if (chunks.length === 0) return fallback;
   const tokens = normalize(query);
   const querySet = expandedQuerySet(tokens);
+  const idf = buildIdf(chunks);
   let best: BookChunk | undefined;
   let bestScore = 0;
   for (const chunk of chunks) {
-    const s = score(tokens, querySet, chunk.keywords, chunk.section);
-    if (s > bestScore) {
-      bestScore = s;
+    const { total, hasKeywordHit } = score(tokens, querySet, chunk.keywords, chunk.section, idf);
+    if (hasKeywordHit && total > bestScore) {
+      bestScore = total;
       best = chunk;
     }
   }
+  if (bestScore < MIN_RELEVANT_SCORE) return fallback;
   return best ?? fallback;
 }
 

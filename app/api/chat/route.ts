@@ -95,7 +95,14 @@ export async function POST(req: NextRequest) {
 
   try {
     const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      // llama-3.3-70b-versatile answers noticeably better but free-tier Groq
+      // caps it at 100k tokens/DAY (not per-minute) — a handful of test
+      // sessions burns that out fast, and the demo would go dark until the
+      // daily window resets. llama-3.1-8b-instant's free-tier budget is far
+      // larger; the rich system-prompt knowledge primer above is what
+      // actually carries answer quality, so this keeps accuracy while
+      // staying safely inside the free tier for a live demo.
+      model: "llama-3.1-8b-instant",
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         { role: "user", content: userPrompt },
