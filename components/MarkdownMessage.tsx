@@ -2,6 +2,11 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+// Imported here (JS import) rather than via CSS `@import` in globals.css —
+// Turbopack's CSS resolver fails to reach this path inside node_modules
+// even though Node itself resolves it fine; a JS-level import is the
+// documented, working way to pull in a package's CSS in Next.js.
+import "katex/dist/katex.min.css";
 
 type MarkdownMessageProps = { content: string };
 
