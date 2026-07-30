@@ -44,8 +44,11 @@ function createEmptySession(id: string, title = "New chat"): ChatSession {
   return { id, title, messages: [], createdAt: Date.now() };
 }
 
-let sessionCounter = 2;
 let messageCounter = 1000;
+
+function createSessionId() {
+  return `session-${crypto.randomUUID()}`;
+}
 
 function deriveTitle(text: string): string {
   const clean = text.trim().replace(/\s+/g, " ");
@@ -102,8 +105,18 @@ export default function Home() {
     try {
       const saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "[]") as ChatSession[];
       if (saved.length > 0) {
-        setSessions(saved);
-        const leaf = makeLeaf(saved[0].id);
+        const usedIds = new Set<string>();
+        const restored = saved.map((session) => {
+          if (session.id && !usedIds.has(session.id)) {
+            usedIds.add(session.id);
+            return session;
+          }
+          const id = createSessionId();
+          usedIds.add(id);
+          return { ...session, id };
+        });
+        setSessions(restored);
+        const leaf = makeLeaf(restored[0].id);
         setPaneTree(leaf);
         setFocusedPaneId(getLeafIds(leaf)[0]);
       }
@@ -184,7 +197,7 @@ export default function Home() {
   );
 
   const handleNewChat = useCallback(() => {
-    const id = `session-${sessionCounter++}`;
+    const id = createSessionId();
     const session = createEmptySession(id);
     setSessions((prev) => [session, ...prev]);
     openInFocusedPane(id);
@@ -205,7 +218,7 @@ export default function Home() {
     (id: string) => {
       const remaining = sessions.filter((s) => s.id !== id);
       const nextSessions =
-        remaining.length > 0 ? remaining : [createEmptySession(`session-${sessionCounter++}`)];
+        remaining.length > 0 ? remaining : [createEmptySession(createSessionId())];
       const fallbackId = nextSessions[0].id;
 
       setSessions(nextSessions);
