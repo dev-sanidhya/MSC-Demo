@@ -87,7 +87,7 @@ export function VideoPanel({ chunk, chunks, onSelect, onClose }: VideoPanelProps
               )}
               title={c.topic}
             >
-              {c.topic}
+              {c.lecture} · {c.topic}
             </button>
           ))}
         </div>
