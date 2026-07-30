@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowUp, BookOpen, PlayCircle, Sparkles, X } from "lucide-react";
 import type { ChatSession } from "@/lib/types";
 import { clsx } from "clsx";
+import { MarkdownMessage } from "./MarkdownMessage";
 
 type ChatPanelProps = {
   session: ChatSession | undefined;
@@ -152,7 +153,7 @@ export function ChatPanel({
                   : "bg-surface border border-border-subtle text-foreground/90"
               )}
             >
-              <p className="whitespace-pre-wrap">{message.content}</p>
+              <MarkdownMessage content={message.content} tone={message.role === "user" ? "user" : "assistant"} />
               <p
                 className={clsx(
                   "mt-1.5 font-mono text-[10px]",
