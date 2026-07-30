@@ -110,32 +110,81 @@ function splitText(text, chunkSize, overlap, separators = SEPARATORS) {
  * first such line; failing that the caller falls back to the chapter title, so
  * a chunk is never left without a citable section label.
  */
+/**
+ * Reject lines that are really collapsed bond-line diagrams or formula debris
+ * rather than headings.
+ *
+ * pypdf flattens the book's structural drawings into text like
+ * "H C3 H C3 H C3H H" or "+2CH COO—Na + 2H O32". Those are mostly uppercase, so
+ * a naive all-caps heading test happily accepted them and they leaked into the
+ * book panel as section titles. A real heading has several ordinary multi-letter
+ * words and little digit noise.
+ */
+function looksLikeFormulaDebris(line) {
+  const tokens = line.split(/\s+/).filter(Boolean);
+  if (tokens.length === 0) return true;
+
+  // Real words: 3+ alphabetic characters, no embedded digits.
+  const realWords = tokens.filter((t) => /^[A-Za-z]{3,}$/.test(t));
+  if (realWords.length < 2) return true;
+  // Headings are mostly words; diagrams are mostly fragments.
+  if (realWords.length / tokens.length < 0.6) return true;
+  // Digit-heavy lines are subscripts/coefficients, not titles.
+  const digits = (line.match(/\d/g) ?? []).length;
+  if (digits / line.length > 0.08) return true;
+  // Chemistry drawing glyphs that never appear in a heading.
+  if (/[=≡→⇌•·]|--|—\s*[A-Z]\s*—/.test(line)) return true;
+  return false;
+}
+
+// Structural words that are page furniture, not section names.
+const NON_SECTION = new Set(["chapter", "contents", "index", "solved example", "answers", "note"]);
+
 function detectSection(text) {
   const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
-  for (const line of lines) {
-    if (line.length < 6 || line.length > 90) continue;
+  for (const rawLine of lines) {
+    const line = rawLine.replace(/^[•●▪–—]\s*/, "").trim();
+    if (line.length < 8 || line.length > 90) continue;
     const letters = line.replace(/[^A-Za-z]/g, "");
-    if (letters.length < 5) continue;
+    if (letters.length < 6) continue;
+    if (NON_SECTION.has(line.toLowerCase())) continue;
+    if (looksLikeFormulaDebris(line)) continue;
 
     const upperRatio = letters.split("").filter((c) => c === c.toUpperCase()).length / letters.length;
     // All-caps heading (allow a few stray lowercase chars from OCR noise).
     if (upperRatio > 0.85) return toTitleCase(line);
-    // Leading bullet glyph the book uses for sub-headings.
-    if (/^[•●▪–—]\s*[A-Z]/.test(line)) return toTitleCase(line.replace(/^[•●▪–—]\s*/, ""));
+    // Bulleted title-case sub-heading, e.g. "Physical Properties".
+    if (/^[A-Z][a-z]/.test(line) && /^[A-Za-z\s'()&/,-]+$/.test(line) && line.split(/\s+/).length <= 7) {
+      return toTitleCase(line);
+    }
   }
   return null;
 }
+
+// English function words that should stay lowercase in a title. Without this,
+// an ALL-CAPS source heading renders as "What IS Organic Chemistry" because
+// short words were previously passed through untouched.
+const LOWERCASE_IN_TITLE = new Set([
+  "a", "an", "and", "as", "at", "but", "by", "for", "from", "in", "into", "is",
+  "nor", "of", "on", "or", "the", "to", "vs", "with",
+]);
 
 function toTitleCase(s) {
   const cleaned = s
     .replace(/\s+/g, " ")
     .replace(/[:.]+$/, "")
     .trim();
-  // Keep chemistry tokens (SN1, KMnO4, HBr) uppercase; title-case ordinary words.
-  return cleaned
-    .split(" ")
-    .map((word) => {
-      if (/\d/.test(word) || word.length <= 3) return word;
+
+  const words = cleaned.split(" ");
+  return words
+    .map((word, i) => {
+      // Preserve chemistry tokens verbatim: SN1, KMnO4, HBr, PCC, OH, H2SO4.
+      if (/\d/.test(word)) return word;
+      const lower = word.toLowerCase();
+      if (i > 0 && LOWERCASE_IN_TITLE.has(lower)) return lower;
+      // Short all-caps tokens that aren't function words are likely reagents
+      // or acronyms (OH, PCC, THF), so leave them uppercase.
+      if (word.length <= 3 && word === word.toUpperCase()) return word;
       if (word === word.toUpperCase()) {
         return word.charAt(0) + word.slice(1).toLowerCase();
       }

@@ -25,8 +25,16 @@ export type VideoMeta = {
 
 export type BookChunk = {
   id: string;
+  /** Printed page number as shown in the physical book — what a student looks up. */
   page: number;
-  section: string; // e.g. "6.3 Preparation of Alcohols"
+  /** Last printed page this chunk spans (equals `page` for single-page chunks). */
+  pageEnd: number;
+  /** Index within the PDF file, which is offset from `page` by the front matter. */
+  pdfPage: number;
+  chapterNumber: number;
+  chapterTitle: string;
+  /** e.g. "Ch. 29 Alkene — Dehydration Of Alcohols" */
+  section: string;
   text: string;
   keywords: string[];
 };

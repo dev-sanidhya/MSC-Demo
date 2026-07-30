@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Groq from "groq-sdk";
-import { bookChunks, videoChunks } from "@/lib/data";
-import { findTopBookChunks, findTopVideoChunks } from "@/lib/match";
+import { findTopBookChunks, findTopVideoChunks } from "@/lib/retrieval";
 
 type HistoryMessage = { role: "user" | "assistant"; content: string };
 
@@ -38,11 +37,16 @@ export async function POST(req: NextRequest) {
   }
 
   const message = body.message.trim();
-  const videoMatches = findTopVideoChunks(message, videoChunks);
-  const bookMatches = findTopBookChunks(message, bookChunks);
+  const videoMatches = findTopVideoChunks(message, 3);
+  const bookMatches = findTopBookChunks(message, 3);
   const sourceContext = [
     ...videoMatches.map((chunk) => `LECTURE: ${chunk.lecture} | ${chunk.topic}\n${chunk.text}`),
-    ...bookMatches.map((chunk) => `TEXTBOOK: page ${chunk.page} | ${chunk.section}\n${chunk.text}`),
+    ...bookMatches.map(
+      (chunk) =>
+        `TEXTBOOK: ${chunk.section} | page ${
+          chunk.pageEnd > chunk.page ? `${chunk.page}-${chunk.pageEnd}` : chunk.page
+        }\n${chunk.text}`
+    ),
   ].join("\n\n");
   const prompt = `${sourceContext || "No closely matching source was found."}\n\nStudent question: ${message}`;
 

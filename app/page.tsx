@@ -16,7 +16,8 @@ import { PaneTree } from "@/components/PaneTree";
 import { VideoPanel } from "@/components/VideoPanel";
 import { BookPanel } from "@/components/BookPanel";
 import { ResizeHandle } from "@/components/ResizeHandle";
-import { bookChunks, relatedBookChunks, relatedVideoChunks, videoChunks } from "@/lib/data";
+import { bookChunks, videoChunks } from "@/lib/data";
+import { relatedBookChunks, relatedVideoChunks } from "@/lib/retrieval";
 import {
   countLeaves,
   findLeafById,
