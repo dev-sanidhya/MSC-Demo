@@ -19,6 +19,8 @@ type SharedProps = {
   onClosePane: (leafId: string) => void;
   onOpenVideo: (sessionId: string) => void;
   onOpenBook: (sessionId: string) => void;
+  onOpenVideoChunk: (sessionId: string, chunkId: string) => void;
+  onOpenBookChunk: (sessionId: string, chunkId: string) => void;
   onResizeSplit: (splitId: string, index: number, deltaPercent: number) => void;
 };
 
@@ -76,6 +78,8 @@ function PaneLeafView({
   onClosePane,
   onOpenVideo,
   onOpenBook,
+  onOpenVideoChunk,
+  onOpenBookChunk,
 }: SharedProps & { node: PaneLeaf }) {
   const session = sessions.find((s) => s.id === node.sessionId);
   const isFocused = focusedPaneId === node.id;
@@ -95,6 +99,8 @@ function PaneLeafView({
         onClose={() => onClosePane(node.id)}
         onOpenVideo={session ? () => onOpenVideo(session.id) : undefined}
         onOpenBook={session ? () => onOpenBook(session.id) : undefined}
+        onOpenVideoChunk={session ? (chunkId) => onOpenVideoChunk(session.id, chunkId) : undefined}
+        onOpenBookChunk={session ? (chunkId) => onOpenBookChunk(session.id, chunkId) : undefined}
       />
       {isDraggingSession && <PaneDropZones leafId={node.id} canSplit={canSplit} />}
     </div>

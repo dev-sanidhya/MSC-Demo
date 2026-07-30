@@ -13,6 +13,8 @@ type ChatPanelProps = {
   onClose?: () => void;
   onOpenVideo?: () => void;
   onOpenBook?: () => void;
+  onOpenVideoChunk?: (chunkId: string) => void;
+  onOpenBookChunk?: (chunkId: string) => void;
 };
 
 const STARTER_QUESTIONS = [
@@ -38,6 +40,8 @@ export function ChatPanel({
   onClose,
   onOpenVideo,
   onOpenBook,
+  onOpenVideoChunk,
+  onOpenBookChunk,
 }: ChatPanelProps) {
   const [draft, setDraft] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -175,8 +179,24 @@ export function ChatPanel({
               )}
               {message.role === "assistant" && (message.videoChunkId || message.bookChunkId) && (
                 <div className="mt-3 flex flex-wrap gap-1.5">
-                  {message.videoChunkId && onOpenVideo && <button type="button" onClick={onOpenVideo} className="hidden items-center gap-1 rounded-full border border-accent/35 bg-accent-dim px-2.5 py-1 text-[10px] font-semibold text-accent-strong md:inline-flex"><PlayCircle size={12} /> Lecture moment</button>}
-                  {message.bookChunkId && onOpenBook && <button type="button" onClick={onOpenBook} className="hidden items-center gap-1 rounded-full border border-border-strong bg-surface-2 px-2.5 py-1 text-[10px] font-semibold text-foreground md:inline-flex"><BookOpen size={12} /> Book reference</button>}
+                  {message.videoChunkId && onOpenVideoChunk && (
+                    <button
+                      type="button"
+                      onClick={() => onOpenVideoChunk(message.videoChunkId!)}
+                      className="hidden items-center gap-1 rounded-full border border-accent/35 bg-accent-dim px-2.5 py-1 text-[10px] font-semibold text-accent-strong md:inline-flex"
+                    >
+                      <PlayCircle size={12} /> Lecture moment
+                    </button>
+                  )}
+                  {message.bookChunkId && onOpenBookChunk && (
+                    <button
+                      type="button"
+                      onClick={() => onOpenBookChunk(message.bookChunkId!)}
+                      className="hidden items-center gap-1 rounded-full border border-border-strong bg-surface-2 px-2.5 py-1 text-[10px] font-semibold text-foreground md:inline-flex"
+                    >
+                      <BookOpen size={12} /> Book reference
+                    </button>
+                  )}
                 </div>
               )}
               <p

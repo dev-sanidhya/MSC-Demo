@@ -67,15 +67,18 @@ const FIRST_SESSION_ID = "session-1";
 const STORAGE_KEY = "vibrant-demo-sessions";
 
 export default function Home() {
-  const [sessions, setSessions] = useState<ChatSession[]>(() => {
-    if (typeof window === "undefined") return [createEmptySession(FIRST_SESSION_ID)];
-    try {
-      const saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "[]") as ChatSession[];
-      return saved.length > 0 ? saved : [createEmptySession(FIRST_SESSION_ID)];
-    } catch {
-      return [createEmptySession(FIRST_SESSION_ID)];
-    }
-  });
+  // Deliberately NOT read from localStorage here: a useState initializer
+  // runs during SSR too, where window/localStorage don't exist, so reading
+  // it here would make the server-rendered HTML and the first client
+  // render disagree — a hydration mismatch that forces React to tear down
+  // and rebuild the whole tree on every load (losing in-flight state,
+  // occasionally eating clicks during the rebuild window). Server and the
+  // first client render both start from the same plain default; the
+  // effect below restores localStorage content right after mount, which is
+  // a normal client-side state update, not a hydration mismatch.
+  const [sessions, setSessions] = useState<ChatSession[]>(() => [
+    createEmptySession(FIRST_SESSION_ID),
+  ]);
   const [paneTree, setPaneTree] = useState<PaneNode>(() => makeLeaf(FIRST_SESSION_ID));
   const [focusedPaneIdRaw, setFocusedPaneId] = useState<string | null>(
     () => getLeafIds(makeLeaf(FIRST_SESSION_ID))[0]
@@ -88,10 +91,35 @@ export default function Home() {
   const [videoPanelHeightPct, setVideoPanelHeightPct] = useState(60);
   const [thinkingSessionIds, setThinkingSessionIds] = useState<string[]>([]);
   const [isMobile, setIsMobile] = useState(false);
+  const [hasHydratedStorage, setHasHydratedStorage] = useState(false);
 
   useEffect(() => {
+    // Restoring from an external system (localStorage) on mount, with no
+    // render-time alternative — window/localStorage don't exist during SSR
+    // or the first client render, so this can't be derived during render.
+    /* eslint-disable react-hooks/set-state-in-effect */
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "[]") as ChatSession[];
+      if (saved.length > 0) {
+        setSessions(saved);
+        const leaf = makeLeaf(saved[0].id);
+        setPaneTree(leaf);
+        setFocusedPaneId(getLeafIds(leaf)[0]);
+      }
+    } catch {
+      // Malformed/corrupt storage — keep the plain default session.
+    } finally {
+      setHasHydratedStorage(true);
+    }
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, []);
+
+  useEffect(() => {
+    // Don't persist the pre-hydration default over real saved data — wait
+    // until the restore effect above has had its turn.
+    if (!hasHydratedStorage) return;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
-  }, [sessions]);
+  }, [sessions, hasHydratedStorage]);
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 767px)");
@@ -234,6 +262,24 @@ export default function Home() {
     const sessionId = focusedSession.id;
     setSessions((prev) => prev.map((s) => (s.id === sessionId ? { ...s, bookDismissed: true } : s)));
   }, [focusedSession]);
+
+  // Jumps to the exact chunk a given message cited — distinct from
+  // handleSelectVideoChunk/handleSelectBookChunk (which always act on
+  // whichever pane is currently focused, for the switcher pills in the
+  // panel itself). This one is keyed by sessionId so a message's own
+  // "Lecture moment"/"Book reference" button always opens THAT message's
+  // citation, not whatever the panel happens to be showing right now.
+  const handleOpenMessageVideoChunk = useCallback((sessionId: string, chunkId: string) => {
+    setSessions((prev) =>
+      prev.map((s) => (s.id === sessionId ? { ...s, activeVideoChunkId: chunkId, videoDismissed: false } : s))
+    );
+  }, []);
+
+  const handleOpenMessageBookChunk = useCallback((sessionId: string, chunkId: string) => {
+    setSessions((prev) =>
+      prev.map((s) => (s.id === sessionId ? { ...s, activeBookChunkId: chunkId, bookDismissed: false } : s))
+    );
+  }, []);
 
   const handleOpenVideo = useCallback((sessionId: string) => {
     setSessions((prev) =>
@@ -464,6 +510,8 @@ export default function Home() {
             onClosePane={handleClosePane}
             onOpenVideo={handleOpenVideo}
             onOpenBook={handleOpenBook}
+            onOpenVideoChunk={handleOpenMessageVideoChunk}
+            onOpenBookChunk={handleOpenMessageBookChunk}
             onResizeSplit={handleResizeSplit}
           />
 
