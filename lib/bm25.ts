@@ -69,8 +69,22 @@ const SYNONYMS: Array<[RegExp, string]> = [
   [/\b(?:pinacol\w*|पिनाकोल)\b/g, "pinacol"],
   [/\b(?:epoxide|ऑक्साइड|एपॉक्साइड)\b/g, "epoxide"],
   [/\b(?:thionyl|socl2)\b/g, "thionylchloride"],
+  // The book abbreviates "alkaline" as "alk" ("alk KMnO 4"), so a student
+  // typing the full word would otherwise miss it entirely — "alkaline" has
+  // zero occurrences in the extracted text while the reaction is covered.
+  [/\b(?:alkaline|alkali|alk)\b/g, "alkaline"],
+  [/\b(?:baeyer|bayer)\b/g, "baeyer"],
 ];
 
+// Includes generic question vocabulary, not just classic stopwords.
+//
+// This matters for the relevance gate: a word like "immediately" or "convert"
+// is statistically rare inside a chemistry corpus, so IDF alone rates it as
+// highly discriminative — but it carries no topical meaning. Left in, it let
+// "Why does the Lucas test give turbidity immediately for tertiary alcohols?"
+// earn a citation from an unrelated chapter purely on the word "immediately".
+// Statistical rarity in a domain corpus is not the same as topical
+// significance, so these are removed before scoring.
 const STOPWORDS = new Set([
   "the", "a", "an", "of", "in", "on", "for", "and", "or", "to", "is", "are",
   "with", "by", "at", "this", "that", "it", "its", "as", "be", "was", "were",
@@ -79,6 +93,16 @@ const STOPWORDS = new Set([
   "will", "would", "should", "if", "then", "than", "there", "here", "so",
   "but", "not", "no", "yes", "also", "very", "more", "most", "some", "any",
   "give", "get", "using", "use", "used", "between", "difference", "differ",
+  // Generic question/answer verbs and adverbs
+  "immediately", "quickly", "slowly", "faster", "fast", "slower", "slow",
+  "convert", "converted", "converts", "conversion", "form", "forms", "formed",
+  "happen", "happens", "happened", "occur", "occurs", "called", "call",
+  "work", "works", "working", "mean", "means", "meaning", "result", "results",
+  "example", "examples", "help", "helps", "need", "needs", "want", "make",
+  "makes", "made", "take", "takes", "put", "show", "shows", "shown", "know",
+  "understand", "doubt", "question", "answer", "step", "steps", "way", "ways",
+  "good", "best", "better", "many", "much", "about", "into", "over", "under",
+  "during", "after", "before", "still", "even", "only", "just", "actually",
   // Devanagari function words common in the ASR transcripts
   "है", "के", "का", "की", "को", "में", "से", "और", "यह", "हो", "तो", "एक",
   "ना", "पर", "हैं", "कि", "भी", "ही", "जो", "वह", "अब", "इस", "कर", "हम",
@@ -119,13 +143,32 @@ type IndexedDoc = {
   freqs: Map<string, number>;
 };
 
+export type Bm25Options = {
+  /**
+   * Multiplier applied to the IDF charged for a query term that appears
+   * nowhere in this corpus (see queryCoverage). 1.0 means "absence is full
+   * evidence the corpus doesn't cover this".
+   *
+   * Lower it for a corpus in a different language than the queries. The
+   * lecture transcripts are Hindi ASR, where English technical terms are
+   * routinely absent or mangled ("ethanol", "formaldehyde", "zaitsev" simply
+   * aren't in the Devanagari text even when the lecturer teaches exactly that
+   * topic). At full penalty this rejected demonstrably correct matches — the
+   * "Phenol" lecture moment scored only 0.21 coverage for a phenol question.
+   * The English book prose has no such excuse, so it keeps the full penalty.
+   */
+  oovPenalty?: number;
+};
+
 export class Bm25Index {
   private docs: IndexedDoc[] = [];
   private df = new Map<string, number>();
   private avgLength = 0;
   private byId = new Map<string, IndexedDoc>();
+  private oovPenalty: number;
 
-  constructor(docs: Bm25Doc[]) {
+  constructor(docs: Bm25Doc[], options: Bm25Options = {}) {
+    this.oovPenalty = options.oovPenalty ?? 1;
     for (const doc of docs) {
       const freqs = new Map<string, number>();
       const add = (text: string, weight: number) => {
@@ -184,13 +227,48 @@ export class Bm25Index {
     return scored.slice(0, limit);
   }
 
-  /** How many query terms a document actually matched (used as a relevance gate). */
-  matchedTermCount(docId: string, query: string): number {
+  /** IDF assigned to a query term that appears nowhere in the corpus. */
+  private oovIdf(): number {
+    return Math.log(1 + (this.docs.length + 0.5) / 0.5) * this.oovPenalty;
+  }
+
+  /**
+   * Fraction of the query's total "importance mass" that this document matches,
+   * where importance is IDF and a term absent from the corpus counts as
+   * maximally important *and* unmatched.
+   *
+   * That last part is the crux. Simpler gates kept failing in one direction or
+   * the other:
+   *   - Counting matched terms was too lax on long questions and too strict on
+   *     short ones.
+   *   - Taking the best matched term's IDF still leaked, because a generic word
+   *     ("test", "immediately") is statistically rare inside a chemistry corpus
+   *     and therefore looks discriminative while carrying no topical meaning.
+   *
+   * Both leaks share a root cause: when the term that defines the question is
+   * absent from the corpus, ignoring it lets the leftover generic words account
+   * for 100% of what remains, so an unrelated chapter looks like a full match.
+   * Charging absent terms at maximum IDF turns their absence into exactly the
+   * signal it should be, "this book does not cover what was asked", and drives
+   * coverage down instead of up.
+   *
+   * Returns 0..1.
+   */
+  queryCoverage(docId: string, query: string): number {
     const doc = this.byId.get(docId);
     if (!doc) return 0;
-    const unique = new Set(tokenize(query));
-    let n = 0;
-    for (const term of unique) if (doc.freqs.has(term)) n += 1;
-    return n;
+    const terms = new Set(tokenize(query));
+    if (terms.size === 0) return 0;
+
+    const oov = this.oovIdf();
+    let matched = 0;
+    let total = 0;
+    for (const term of terms) {
+      const inCorpus = (this.df.get(term) ?? 0) > 0;
+      const weight = inCorpus ? this.idf(term) : oov;
+      total += weight;
+      if (doc.freqs.has(term)) matched += weight;
+    }
+    return total > 0 ? matched / total : 0;
   }
 }

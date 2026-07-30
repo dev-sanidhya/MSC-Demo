@@ -30,24 +30,41 @@ const videoIndex = new Bm25Index(
     text: c.text,
     title: c.topic,
     keywords: c.keywords,
-  }))
+  })),
+  // Transcripts are Hindi ASR, so an English question term being absent is weak
+  // evidence that the lecture doesn't cover the topic. See Bm25Options.
+  { oovPenalty: 0.3 }
 );
 
 const bookById = new Map(bookChunks.map((c) => [c.id, c]));
 const videoById = new Map(videoChunks.map((c) => [c.id, c]));
 
 /**
- * Relevance gates.
- *
- * A BM25 score is only meaningful relative to the corpus, so these were tuned
- * against the real question battery rather than picked a priori: high enough
- * that off-topic questions (thionyl chloride, which this book barely covers)
- * return nothing, low enough that genuine paraphrases still land. Requiring
- * two distinct matched query terms is the stronger of the two gates — it stops
- * a single incidental word from carrying a citation on its own.
+ * Absolute floor on the BM25 score. A score is only meaningful relative to its
+ * corpus, so this was tuned against the real question battery rather than
+ * picked a priori. It mainly discards long-tail noise; the coverage gate below
+ * does the substantive work.
  */
 const MIN_SCORE = 2.0;
-const MIN_MATCHED_TERMS = 2;
+/**
+ * A document must match at least this fraction of the query's IDF-weighted
+ * importance mass to be citable (see Bm25Index.queryCoverage).
+ *
+ * Tuned against the real question battery in scripts/eval-retrieval.mts. Two
+ * simpler gates were tried and both failed:
+ *   - "match >= 2 query terms": too lax on long questions (the Lucas test
+ *     question matched "tertiary" + "alcohol" in an unrelated chapter), too
+ *     strict on short ones ("Explain hyperconjugation" is one content term
+ *     after stopwords and was rejected outright).
+ *   - "best matched term's IDF >= 2.5": still leaked, because generic words
+ *     like "test" are rare in a chemistry corpus and so read as
+ *     discriminative despite carrying no topical meaning.
+ *
+ * Coverage fixes both because absent terms are charged at maximum IDF, so a
+ * question whose defining term the book never mentions cannot reach the
+ * threshold on its leftover generic words.
+ */
+const MIN_COVERAGE = 0.5;
 
 function gate<T>(
   index: Bm25Index,
@@ -59,9 +76,7 @@ function gate<T>(
   const out: T[] = [];
   for (const hit of hits) {
     if (hit.score < MIN_SCORE) continue;
-    // Single-term matches are usually incidental (e.g. the word "alcohol" in a
-    // chapter that is not about the asked reaction).
-    if (index.matchedTermCount(hit.id, query) < MIN_MATCHED_TERMS) continue;
+    if (index.queryCoverage(hit.id, query) < MIN_COVERAGE) continue;
     const doc = byId.get(hit.id);
     if (doc) out.push(doc);
     if (out.length >= limit) break;
