@@ -285,8 +285,8 @@ export default function Home() {
   const handleOpenVideo = useCallback((sessionId: string) => {
     setSessions((prev) =>
       prev.map((s) =>
-        s.id === sessionId
-          ? { ...s, videoDismissed: false, activeVideoChunkId: s.activeVideoChunkId ?? videoChunks[0]?.id }
+        s.id === sessionId && s.activeVideoChunkId
+          ? { ...s, videoDismissed: false }
           : s
       )
     );
@@ -295,8 +295,8 @@ export default function Home() {
   const handleOpenBook = useCallback((sessionId: string) => {
     setSessions((prev) =>
       prev.map((s) =>
-        s.id === sessionId
-          ? { ...s, bookDismissed: false, activeBookChunkId: s.activeBookChunkId ?? bookChunks[0]?.id }
+        s.id === sessionId && s.activeBookChunkId
+          ? { ...s, bookDismissed: false }
           : s
       )
     );
@@ -379,6 +379,10 @@ export default function Home() {
           ...s,
           title: isFirstMessage ? deriveTitle(text) : s.title,
           messages: [...s.messages, userMessage],
+          activeVideoChunkId: undefined,
+          activeBookChunkId: undefined,
+          videoDismissed: false,
+          bookDismissed: false,
         };
       })
     );
@@ -446,8 +450,8 @@ export default function Home() {
                     videoChunkId: reply.videoChunkId ?? undefined,
                     bookChunkId: reply.bookChunkId ?? undefined,
                   } : m),
-                  activeVideoChunkId: reply.videoChunkId ?? s.activeVideoChunkId,
-                  activeBookChunkId: reply.bookChunkId ?? s.activeBookChunkId,
+                  activeVideoChunkId: reply.videoChunkId ?? undefined,
+                  activeBookChunkId: reply.bookChunkId ?? undefined,
                   videoDismissed: reply.videoChunkId ? false : s.videoDismissed,
                   bookDismissed: reply.bookChunkId ? false : s.bookDismissed,
                 }
@@ -459,6 +463,8 @@ export default function Home() {
         setSessions((prev) =>
           prev.map((s) => (s.id === sessionId ? {
             ...s,
+            activeVideoChunkId: undefined,
+            activeBookChunkId: undefined,
             messages: s.messages.map((m) => m.id === assistantMessageId ? {
               ...m,
               content: `### Couldn’t generate that answer\n\n${err.message}\n\nTry again in a moment.`,

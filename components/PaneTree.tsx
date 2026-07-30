@@ -97,8 +97,8 @@ function PaneLeafView({
         isThinking={session ? thinkingSessionIds.includes(session.id) : false}
         onSend={(text) => session && onSend(session.id, text)}
         onClose={() => onClosePane(node.id)}
-        onOpenVideo={session ? () => onOpenVideo(session.id) : undefined}
-        onOpenBook={session ? () => onOpenBook(session.id) : undefined}
+        onOpenVideo={session?.activeVideoChunkId ? () => onOpenVideo(session.id) : undefined}
+        onOpenBook={session?.activeBookChunkId ? () => onOpenBook(session.id) : undefined}
         onOpenVideoChunk={session ? (chunkId) => onOpenVideoChunk(session.id, chunkId) : undefined}
         onOpenBookChunk={session ? (chunkId) => onOpenBookChunk(session.id, chunkId) : undefined}
       />
