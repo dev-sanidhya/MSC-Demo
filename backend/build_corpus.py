@@ -205,7 +205,12 @@ def build_book_documents() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     ui_chunks: list[dict[str, Any]] = []
     for page in pages:
         for index, text in enumerate(split_page(page["text"])):
-            chunk_id = f"book:p{page['page']:04d}:{index:02d}"
+            # Printed page labels can repeat in front matter or when a footer is
+            # unreadable. The physical PDF page makes provenance IDs stable and
+            # globally unique while retaining the student-facing printed page.
+            chunk_id = (
+                f"book:pdf{page['pdfPage']:04d}:p{page['page']:04d}:{index:02d}"
+            )
             section = f"Ch. {page['chapterNumber']} {page['chapterTitle']}"
             metadata = {
                 "page": page["page"],
