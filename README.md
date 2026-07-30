@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Vibrant Academy Chemistry Doubt Assistant
 
-## Getting Started
+A demo chat experience grounded in M.S. Chouhan lecture transcripts and the
+provided *Advanced Theory in Organic Chemistry for JEE* PDF. Answers can open
+the cited lecture at the exact timestamp or show the cited book page.
 
-First, run the development server:
+## Run locally
 
-```bash
+Requirements: Node.js, Python 3.11+, and a Groq API key.
+
+```powershell
+Copy-Item .env.example .env.local
+# Add GROQ_API_KEY to .env.local
+npm install
+npm run retrieval:setup
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3001](http://localhost:3001). The retrieval service runs
+locally on port `8765` and `npm run dev` starts both processes.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The first setup downloads the embedding and reranking models and builds the
+ignored local Qdrant index. Later runs only need `npm run dev`; rebuild the
+index after changing source transcripts, the PDF extraction, or chunking.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Retrieval architecture
 
-## Learn More
+- Lecture segments come directly from YouTube caption cues. Each citation keeps
+  its real cue start/end time and deep-links to that timestamp.
+- Book chunks never cross a printed-page boundary, so page citations remain
+  exact.
+- Qdrant fuses multilingual dense search and BM25 sparse search using reciprocal
+  rank fusion.
+- A multilingual cross-encoder reranks candidates, with small metadata boosts
+  for exact named reactions and tests.
+- The chat model receives compact source blocks and must cite their stable IDs.
+  Only IDs actually used in the answer are shown in the source panels.
 
-To learn more about Next.js, take a look at the following resources:
+Useful checks:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```powershell
+npm run retrieval:check
+npm run lint
+npm run build
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Implementation details are in [backend/README.md](backend/README.md).

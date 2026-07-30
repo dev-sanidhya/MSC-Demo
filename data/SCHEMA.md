@@ -1,42 +1,45 @@
-# Shared data schema — Vibrant Academy demo (Alcohol chapter)
+# Retrieval data schema
 
-## data/video-chunks.json
+## `video-chunks-v2.json`
+
+Each entry is a caption-derived lecture segment. `startSeconds` and
+`endSeconds` are taken from the first and last included YouTube caption cues;
+they are not LLM-generated estimates.
+
 ```ts
 type VideoChunk = {
-  id: string;            // e.g. "bsG6Egtznns-000"
-  videoId: string;       // YouTube video id, e.g. "bsG6Egtznns"
-  videoTitle: string;    // full YT title
-  lecture: string;       // short label, e.g. "Lecture #1-A"
+  id: string;
+  videoId: string;
+  videoTitle: string;
+  lecture: string;
   startSeconds: number;
   endSeconds: number;
-  text: string;          // cleaned transcript text for this chunk
-  topic: string;         // short human-readable topic title for this chunk
-  keywords: string[];    // lowercase keywords/phrases for retrieval
-};
-```
-Top-level export: `VideoChunk[]`.
-
-## data/videos.json (playlist metadata, used by UI even before transcripts land)
-```ts
-type VideoMeta = {
-  videoId: string;
-  title: string;
-  lecture: string;
-  durationSeconds: number;
-  thumbnail: string; // https://i.ytimg.com/vi/{videoId}/hqdefault.jpg
+  text: string;
+  topic: string;
+  keywords: string[];
 };
 ```
 
-## data/book-chunks.json (placeholder until PDF is provided — stub with empty array [])
+## `book-chunks-v2.json`
+
+Every chunk stays within one printed book page.
+
 ```ts
 type BookChunk = {
   id: string;
   page: number;
-  section: string;   // e.g. "6.3 Preparation of Alcohols"
+  section: string;
   text: string;
   keywords: string[];
 };
 ```
 
-Both video-chunks.json and book-chunks.json are consumed by a single retrieval
-module (lib/retrieval.ts) that does keyword/TF-IDF scoring — no LLM calls.
+## Supporting data
+
+- `videos.json`: playlist display metadata.
+- `book-pages.json`: extracted text keyed by printed page.
+- `raw/*.json`: source caption cues used to build lecture segments.
+
+The frontend loads the two V2 chunk files only to resolve source IDs and render
+the lecture/book panels. Search is performed by the local Python retrieval
+service over `backend/data/documents.jsonl` and its persisted Qdrant index.

@@ -11,6 +11,12 @@ import "katex/dist/katex.min.css";
 type MarkdownMessageProps = { content: string };
 
 export function MarkdownMessage({ content }: MarkdownMessageProps) {
+  const markdown = content
+    .replace(/\\\[/g, "$$")
+    .replace(/\\\]/g, "$$")
+    .replace(/\\\(/g, "$")
+    .replace(/\\\)/g, "$");
+
   return (
     <div className="markdown-message min-w-0 overflow-hidden">
       <ReactMarkdown
@@ -33,7 +39,7 @@ export function MarkdownMessage({ content }: MarkdownMessageProps) {
           td: ({ children }) => <td className="border-b border-border-subtle px-3 py-2 align-top">{children}</td>,
         }}
       >
-        {content}
+        {markdown}
       </ReactMarkdown>
     </div>
   );

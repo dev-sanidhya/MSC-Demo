@@ -16,46 +16,29 @@ Repo: https://github.com/dev-sanidhya/MSC-Demo
 
 ## Architecture
 
-```
-scripts/            # Offline build-time pipeline (run manually, output committed)
-  videos.config.mjs      # Source-of-truth list of 17 lecture videos
-  keyword-dictionary.mjs # Curated chemistry keyword dictionary (shared)
-  fetch-transcripts.mjs  # Hindi ASR transcripts -> data/raw/{videoId}.json
-  chunk-transcripts.mjs  # -> data/video-chunks.json (619 chunks) + videos.json
-  extract-book.py        # 602-page PDF -> data/book-pages.json (592 pages)
-  chunk-book.mjs         # -> data/book-chunks.json (671 chunks)
-  eval-retrieval.mts     # Offline retrieval eval (imports real prod modules)
+`backend/build_corpus.py` creates page-bounded book chunks and caption-cue
+lecture segments. `backend/build_index.py` stores them in local Qdrant with
+multilingual dense and BM25 sparse vectors. `backend/app.py` performs reciprocal
+rank fusion, multilingual reranking, exact-label boosts, and adjacent-result
+deduplication. The Next.js chat route rewrites ambiguous follow-ups, requests
+retrieval, sends compact source blocks to Groq, and exposes only the source IDs
+the generated answer actually cited.
 
-lib/
-  bm25.ts           # BM25 ranking + domain synonym canonicalisation
-  retrieval.ts      # Gated retrieval over both pools
-  data.ts           # Loads the committed JSON datasets
-  paneTree.ts       # Tiling pane tree for split-view chats
-
-app/api/chat/route.ts  # Retrieval -> Groq (streaming SSE)
-```
-
-Retrieval is deliberately **LLM-free and offline**: BM25 over in-memory indexes,
-no embeddings service, no vector DB, no network. The video/book panels therefore
-keep working even if the Groq API is down or rate-limited, which was a hard
-requirement for a live demo on a free-tier key.
+This remains a local demo harness: no hosted vector database, ingestion queue,
+tenant model, or production observability layer.
 
 ## Key decisions and why
 
-- **Full-text extraction, not hand-written summaries.** Following
-  open-notebook's ingestion model. The original implementation hand-wrote 27
-  summary chunks covering 18 of 602 pages (~1% of the book), which is why every
-  question returned the same handful of pages. Now 671 chunks over 490 pages.
-- **Chunking**: recursive separator ladder, ~400-token chunks, 15% overlap,
-  min-size filter (ported from open-notebook's `utils/chunking.py`).
-- **Page provenance** is tracked through chunking via a char-offset -> printed
-  page map, because a chunk that cannot name its page cannot be cited.
-  Printed page != PDF index (8 pages of front matter).
-- **Coverage-based relevance gate** rather than matched-term counts. Absent
-  query terms are charged maximum IDF, so a question whose defining term the
-  book never mentions retrieves nothing instead of a confidently wrong page.
-- **Per-corpus OOV penalty**: full for the English book, discounted (0.3) for
-  the Hindi-ASR transcripts, where an English term's absence is weak evidence.
+- **Full-text extraction, not hand-written summaries.** The supplied 602-page
+  PDF produced 592 text-bearing pages and 993 searchable page-safe chunks.
+- **Transcript-derived timestamps.** The 1,244 lecture segments originate from
+  raw YouTube caption cues. Segment boundaries keep their exact cue times.
+- **Hybrid retrieval.** Multilingual semantic search covers paraphrases and
+  Hindi/English code-switching; sparse BM25 preserves reagent and named-reaction
+  precision. A reranker makes the final selection.
+- **Grounded citations.** Search rank alone never creates a visible citation.
+  The answer must reference a supplied source marker before the corresponding
+  video or book panel is attached.
 - **Model**: `llama-3.1-8b-instant`. The 70b model answers better but its
   free-tier cap is 100k tokens/**day**, which testing exhausted in one session.
 
@@ -76,18 +59,13 @@ requirement for a live demo on a free-tier key.
 
 ## Measured state
 
-- Book: 671 chunks / 490 distinct pages / 98.4% of chunks verified present on
-  the page they cite.
-- Video: 619 chunks across 17 real videos, timestamp deep-linked.
-- Eval (`npx tsx scripts/eval-retrieval.mts`), 30 realistic questions:
-  23/30 book citations, 14/30 lecture citations, **34 distinct book pages**
-  (was the same 2-3 for everything).
-- Covered/uncovered split battery: 20/20.
+- Book: 993 chunks from 592 text-bearing pages.
+- Video: 1,244 caption-aligned segments across 17 real videos.
+- Retrieval smoke checks include Iodoform, Lucas, Williamson, Grignard + ester,
+  hydroboration, and alcohol oxidation (`npm run retrieval:check`).
 
-## Next steps
+## Demo boundary
 
-- Optional: semantic (embedding) arm alongside BM25 for paraphrase recall.
-  Deferred deliberately - a local model adds serverless cold-start risk, and
-  BM25 over the real full text already fixed the reported problem.
-- Book coverage gaps for named qualitative tests would need a different
-  Chouhan volume; the current PDF genuinely lacks them.
+The local index and models make this unsuitable for the existing Vercel-only
+deployment without adding a persistent Python host. That infrastructure is
+intentionally out of scope for the showcase build.

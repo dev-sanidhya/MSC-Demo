@@ -4,9 +4,9 @@
 // in scripts/ (fetch-transcripts, chunk-transcripts, extract-book, chunk-book).
 
 import type { BookChunk, VideoChunk, VideoMeta } from "./types";
-import videoChunksRaw from "@/data/video-chunks.json";
+import videoChunksRaw from "@/data/video-chunks-v2.json";
 import videosRaw from "@/data/videos.json";
-import bookChunksRaw from "@/data/book-chunks.json";
+import bookChunksRaw from "@/data/book-chunks-v2.json";
 
 export const videos: VideoMeta[] = videosRaw as VideoMeta[];
 export const videoChunks: VideoChunk[] = videoChunksRaw as VideoChunk[];

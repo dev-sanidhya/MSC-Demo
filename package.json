@@ -3,7 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "concurrently -k -n retrieval,web -c magenta,cyan \"npm:dev:retrieval\" \"npm:dev:web\"",
+    "dev:web": "next dev -p 3001",
+    "dev:retrieval": ".venv\\Scripts\\python.exe -m uvicorn backend.app:app --host 127.0.0.1 --port 8765",
+    "retrieval:setup": "powershell -ExecutionPolicy Bypass -File scripts/setup-retrieval.ps1",
+    "retrieval:corpus": ".venv\\Scripts\\python.exe -m backend.build_corpus",
+    "retrieval:index": ".venv\\Scripts\\python.exe -m backend.build_index",
+    "retrieval:check": ".venv\\Scripts\\python.exe -m backend.eval_retrieval",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -30,6 +36,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^10.0.4",
     "eslint": "^9",
     "eslint-config-next": "16.2.12",
     "tailwindcss": "^4",
