@@ -13,9 +13,20 @@ const STOPWORDS = new Set([
 ]);
 
 function normalize(text: string): string[] {
-  return text
+  const expanded = text
     .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, " ")
+    .replace(/alcohols?/g, "alcohol")
+    .replace(/tertiary|3\s*(?:degree|deg)?|3°|tshari|tishri|तीसरा|तृतीय/g, "tertiary")
+    .replace(/secondary|2\s*(?:degree|deg)?|2°|sekendari|द्वितीय/g, "secondary")
+    .replace(/primary|1\s*(?:degree|deg)?|1°|praimari|प्राथमिक/g, "primary")
+    .replace(/grignard|rignard|rig-nard|रिगना/g, "grignard")
+    .replace(/lucas|lukaas|लुकास/g, "lucas")
+    .replace(/oxidation|oxidise|oxidize|ऑक्सीकरण/g, "oxidation")
+    .replace(/dehydration|dehydrate|डिहाइड्रेशन/g, "dehydration")
+    .replace(/phenol|फिनॉल|फेनॉल/g, "phenol");
+
+  return expanded
+    .replace(/[^a-z0-9\u0900-\u097f\s-]/g, " ")
     .split(/\s+/)
     .filter(Boolean);
 }
@@ -144,6 +155,32 @@ export function findBestVideoChunk(
   }
   if (bestScore < MIN_RELEVANT_SCORE) return fallback;
   return best ?? fallback;
+}
+
+/** The top matches are used as a compact hybrid context set for the model. */
+export function findTopVideoChunks(query: string, chunks: VideoChunk[], limit = 3): VideoChunk[] {
+  return findTopChunks(query, chunks, (chunk) => chunk.topic, limit);
+}
+
+export function findTopBookChunks(query: string, chunks: BookChunk[], limit = 2): BookChunk[] {
+  return findTopChunks(query, chunks, (chunk) => chunk.section, limit);
+}
+
+function findTopChunks<T extends { keywords: string[] }>(
+  query: string,
+  chunks: T[],
+  titleFor: (chunk: T) => string,
+  limit: number
+): T[] {
+  const tokens = normalize(query);
+  const querySet = expandedQuerySet(tokens);
+  const idf = buildIdf(chunks);
+  return chunks
+    .map((chunk) => ({ chunk, result: score(tokens, querySet, chunk.keywords, titleFor(chunk), idf) }))
+    .filter(({ result }) => result.hasKeywordHit && result.total >= MIN_RELEVANT_SCORE)
+    .sort((a, b) => b.result.total - a.result.total)
+    .slice(0, limit)
+    .map(({ chunk }) => chunk);
 }
 
 export function findBestBookChunk(

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   DndContext,
   PointerSensor,
@@ -64,10 +64,18 @@ const MAX_PANES = 4;
 
 const FIRST_SESSION_ID = "session-1";
 
+const STORAGE_KEY = "vibrant-demo-sessions";
+
 export default function Home() {
-  const [sessions, setSessions] = useState<ChatSession[]>(() => [
-    createEmptySession(FIRST_SESSION_ID),
-  ]);
+  const [sessions, setSessions] = useState<ChatSession[]>(() => {
+    if (typeof window === "undefined") return [createEmptySession(FIRST_SESSION_ID)];
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "[]") as ChatSession[];
+      return saved.length > 0 ? saved : [createEmptySession(FIRST_SESSION_ID)];
+    } catch {
+      return [createEmptySession(FIRST_SESSION_ID)];
+    }
+  });
   const [paneTree, setPaneTree] = useState<PaneNode>(() => makeLeaf(FIRST_SESSION_ID));
   const [focusedPaneIdRaw, setFocusedPaneId] = useState<string | null>(
     () => getLeafIds(makeLeaf(FIRST_SESSION_ID))[0]
@@ -79,6 +87,19 @@ export default function Home() {
   const [rightWidth, setRightWidth] = useState(420);
   const [videoPanelHeightPct, setVideoPanelHeightPct] = useState(60);
   const [thinkingSessionIds, setThinkingSessionIds] = useState<string[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
+  }, [sessions]);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 767px)");
+    const update = () => setIsMobile(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } })
@@ -317,10 +338,19 @@ export default function Home() {
 
     setThinkingSessionIds((prev) => [...prev, sessionId]);
 
+    const history = (sessions.find((session) => session.id === sessionId)?.messages ?? [])
+      .slice(-6)
+      .map(({ role, content }) => ({ role, content }));
+    const assistantMessageId = `msg-${messageCounter++}`;
+    setSessions((prev) => prev.map((s) => s.id === sessionId ? {
+      ...s,
+      messages: [...s.messages, { id: assistantMessageId, role: "assistant", content: "", createdAt: Date.now() }],
+    } : s));
+
     fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: text }),
+      body: JSON.stringify({ message: text, history }),
     })
       .then(async (res) => {
         if (!res.ok) {
@@ -329,24 +359,46 @@ export default function Home() {
             (err as { error?: string }).error || `Request failed (${res.status})`
           );
         }
-        return res.json() as Promise<ChatApiResponse>;
+        if (!res.body) throw new Error("The assistant returned no response stream.");
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let content = "";
+        let sources: Omit<ChatApiResponse, "content"> = { videoChunkId: null, bookChunkId: null };
+        while (true) {
+          const { done, value } = await reader.read();
+          buffer += decoder.decode(value ?? new Uint8Array(), { stream: !done });
+          const events = buffer.split("\n\n");
+          buffer = events.pop() ?? "";
+          for (const event of events) {
+            const data = event.replace(/^data: /, "");
+            if (!data || data === "[DONE]") continue;
+            const payload = JSON.parse(data) as { type: string; content?: string; videoChunkId?: string | null; bookChunkId?: string | null };
+            if (payload.type === "token" && payload.content) {
+              content += payload.content;
+              setSessions((prev) => prev.map((s) => s.id === sessionId ? {
+                ...s,
+                messages: s.messages.map((m) => m.id === assistantMessageId ? { ...m, content } : m),
+              } : s));
+            }
+            if (payload.type === "sources") sources = { videoChunkId: payload.videoChunkId ?? null, bookChunkId: payload.bookChunkId ?? null };
+          }
+          if (done) break;
+        }
+        return { content, ...sources };
       })
       .then((reply) => {
-        const assistantMessage: ChatMessage = {
-          id: `msg-${messageCounter++}`,
-          role: "assistant",
-          content: reply.content,
-          createdAt: Date.now(),
-          videoChunkId: reply.videoChunkId ?? undefined,
-          bookChunkId: reply.bookChunkId ?? undefined,
-        };
-
         setSessions((prev) =>
           prev.map((s) =>
             s.id === sessionId
               ? {
                   ...s,
-                  messages: [...s.messages, assistantMessage],
+                  messages: s.messages.map((m) => m.id === assistantMessageId ? {
+                    ...m,
+                    content: reply.content || "Sorry, I couldn't generate an answer. Please retry.",
+                    videoChunkId: reply.videoChunkId ?? undefined,
+                    bookChunkId: reply.bookChunkId ?? undefined,
+                  } : m),
                   activeVideoChunkId: reply.videoChunkId ?? s.activeVideoChunkId,
                   activeBookChunkId: reply.bookChunkId ?? s.activeBookChunkId,
                   videoDismissed: reply.videoChunkId ? false : s.videoDismissed,
@@ -357,20 +409,20 @@ export default function Home() {
         );
       })
       .catch((err: Error) => {
-        const errorMessage: ChatMessage = {
-          id: `msg-${messageCounter++}`,
-          role: "assistant",
-          content: `Sorry, something went wrong reaching the AI backend: ${err.message}`,
-          createdAt: Date.now(),
-        };
         setSessions((prev) =>
-          prev.map((s) => (s.id === sessionId ? { ...s, messages: [...s.messages, errorMessage] } : s))
+          prev.map((s) => (s.id === sessionId ? {
+            ...s,
+            messages: s.messages.map((m) => m.id === assistantMessageId ? {
+              ...m,
+              content: `### Couldn’t generate that answer\n\n${err.message}\n\nTry again in a moment.`,
+            } : m),
+          } : s))
         );
       })
       .finally(() => {
         setThinkingSessionIds((prev) => prev.filter((id) => id !== sessionId));
       });
-  }, []);
+  }, [sessions]);
 
   const showAside = showVideo || showBook;
 
@@ -384,7 +436,7 @@ export default function Home() {
       onDragCancel={() => setDraggingSessionId(null)}
     >
       <div className="flex h-screen w-full overflow-hidden bg-background text-foreground">
-        <Sidebar
+        {!isMobile && <Sidebar
           sessions={sessions}
           activeSessionId={focusedSession?.id ?? ""}
           openPaneIds={openPaneSessionIds}
@@ -395,9 +447,9 @@ export default function Home() {
           onNew={handleNewChat}
           onRename={handleRename}
           onDelete={handleDeleteSession}
-        />
+        />}
 
-        {!sidebarCollapsed && <ResizeHandle onResize={handleSidebarResize} />}
+        {!isMobile && !sidebarCollapsed && <ResizeHandle onResize={handleSidebarResize} />}
 
         <main className="flex min-w-0 flex-1">
           <PaneTree
@@ -415,7 +467,7 @@ export default function Home() {
             onResizeSplit={handleResizeSplit}
           />
 
-          {showAside && (
+          {showAside && !isMobile && (
             <>
               <ResizeHandle onResize={handleRightResize} />
 

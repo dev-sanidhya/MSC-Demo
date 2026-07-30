@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowUp, BookOpen, PlayCircle, Sparkles, X } from "lucide-react";
 import type { ChatSession } from "@/lib/types";
 import { clsx } from "clsx";
-import { MarkdownMessage } from "./MarkdownMessage";
+import { MarkdownMessage } from "@/components/MarkdownMessage";
 
 type ChatPanelProps = {
   session: ChatSession | undefined;
@@ -14,6 +14,13 @@ type ChatPanelProps = {
   onOpenVideo?: () => void;
   onOpenBook?: () => void;
 };
+
+const STARTER_QUESTIONS = [
+  "Why do tertiary alcohols react fastest in the Lucas test?",
+  "Compare PCC and acidified K2Cr2O7 for oxidation of alcohols.",
+  "Explain Grignard addition to an ester step by step.",
+  "Why is phenol more acidic than ethanol?",
+];
 
 function formatTime(ts: number) {
   const d = new Date(ts);
@@ -90,7 +97,7 @@ export function ChatPanel({
                 e.stopPropagation();
                 onOpenVideo();
               }}
-              className="rounded-md p-1 text-muted-2 hover:bg-surface-2 hover:text-foreground"
+              className="hidden rounded-md p-1 text-muted-2 hover:bg-surface-2 hover:text-foreground md:block"
               aria-label="Open lecture clip"
               title="Open lecture clip"
             >
@@ -104,7 +111,7 @@ export function ChatPanel({
                 e.stopPropagation();
                 onOpenBook();
               }}
-              className="rounded-md p-1 text-muted-2 hover:bg-surface-2 hover:text-foreground"
+              className="hidden rounded-md p-1 text-muted-2 hover:bg-surface-2 hover:text-foreground md:block"
               aria-label="Open book reference"
               title="Open book reference"
             >
@@ -129,11 +136,18 @@ export function ChatPanel({
 
       <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto px-5 py-5">
         {session.messages.length === 0 && (
-          <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
+          <div className="mx-auto flex h-full max-w-xl flex-col items-center justify-center gap-3 text-center">
             <Sparkles size={20} className="text-accent" />
             <p className="text-sm text-muted">
-              Ask a doubt from the Alcohols chapter to get started.
+              Learn with the exact lecture moment and textbook context behind every answer.
             </p>
+            <div className="flex flex-wrap justify-center gap-2 pt-1">
+              {STARTER_QUESTIONS.map((question) => (
+                <button key={question} type="button" onClick={() => onSend(question)} className="rounded-full border border-border-subtle bg-surface px-3 py-2 text-left text-xs text-foreground/85 transition-colors hover:border-accent/50 hover:bg-accent-dim">
+                  {question}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
@@ -147,13 +161,24 @@ export function ChatPanel({
           >
             <div
               className={clsx(
-                "max-w-[75%] rounded-xl px-4 py-2.5 text-sm leading-relaxed",
+                message.role === "user" ? "max-w-[75%]" : "w-full max-w-3xl",
+                "rounded-xl px-4 py-2.5 text-sm leading-relaxed",
                 message.role === "user"
                   ? "bg-accent-dim border border-accent/30 text-foreground"
                   : "bg-surface border border-border-subtle text-foreground/90"
               )}
             >
-              <MarkdownMessage content={message.content} tone={message.role === "user" ? "user" : "assistant"} />
+              {message.role === "assistant" ? (
+                <MarkdownMessage content={message.content} />
+              ) : (
+                <p className="whitespace-pre-wrap break-words">{message.content}</p>
+              )}
+              {message.role === "assistant" && (message.videoChunkId || message.bookChunkId) && (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                  {message.videoChunkId && onOpenVideo && <button type="button" onClick={onOpenVideo} className="hidden items-center gap-1 rounded-full border border-accent/35 bg-accent-dim px-2.5 py-1 text-[10px] font-semibold text-accent-strong md:inline-flex"><PlayCircle size={12} /> Lecture moment</button>}
+                  {message.bookChunkId && onOpenBook && <button type="button" onClick={onOpenBook} className="hidden items-center gap-1 rounded-full border border-border-strong bg-surface-2 px-2.5 py-1 text-[10px] font-semibold text-foreground md:inline-flex"><BookOpen size={12} /> Book reference</button>}
+                </div>
+              )}
               <p
                 className={clsx(
                   "mt-1.5 font-mono text-[10px]",

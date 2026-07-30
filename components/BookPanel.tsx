@@ -13,7 +13,7 @@ type BookPanelProps = {
 };
 
 export function BookPanel({ chunk, chunks, onSelect, onClose }: BookPanelProps) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
 
   if (!chunk) {
     return (

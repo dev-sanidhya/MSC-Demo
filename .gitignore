@@ -12,6 +12,8 @@
 
 # testing
 /coverage
+/output/
+/.playwright-cli/
 
 # next.js
 /.next/
@@ -29,6 +31,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+/dev.log
+/dev.error.log
 
 # env files (can opt-in for committing if needed)
 .env*
@@ -42,3 +46,13 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# local agent context
+CLAUDE.md
+MEMORY.md
+ERRORS.md
+AGENTS.md
+PROFILE.md
+SESSION_NOTES.md
+.claude/
+.agents/
