@@ -111,38 +111,50 @@ export function ChatPanel({
             </p>
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-start gap-2">
           <div className="hidden items-center gap-1.5 rounded-full border border-border-subtle bg-surface px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted sm:flex">
             <span className="h-1.5 w-1.5 rounded-full bg-accent" />
             Demo mode
           </div>
           {onOpenVideo && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenVideo();
-              }}
-              className="rounded-md p-1 text-muted-2 hover:bg-surface-2 hover:text-foreground"
-              aria-label="Open lecture clip"
-              title="Open lecture clip"
-            >
-              <PlayCircle size={14} />
-            </button>
+            <div className="flex w-14 flex-col items-center gap-0.5 md:w-auto">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenVideo();
+                }}
+                className="rounded-md p-1 text-muted-2 hover:bg-surface-2 hover:text-foreground"
+                aria-label="Open lecture clip"
+                title="Open lecture clip"
+              >
+                <PlayCircle size={14} />
+              </button>
+              {/* Discoverability nudge for new mobile users — desktop already has
+                  the side panel open by default, so this would just be noise there. */}
+              <span className="text-center text-[8px] leading-tight text-muted-2 md:hidden">
+                New lecture clip
+              </span>
+            </div>
           )}
           {onOpenBook && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenBook();
-              }}
-              className="rounded-md p-1 text-muted-2 hover:bg-surface-2 hover:text-foreground"
-              aria-label="Open study reference"
-              title="Open study reference"
-            >
-              <BookOpen size={14} />
-            </button>
+            <div className="flex w-14 flex-col items-center gap-0.5 md:w-auto">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenBook();
+                }}
+                className="rounded-md p-1 text-muted-2 hover:bg-surface-2 hover:text-foreground"
+                aria-label="Open study reference"
+                title="Open study reference"
+              >
+                <BookOpen size={14} />
+              </button>
+              <span className="text-center text-[8px] leading-tight text-muted-2 md:hidden">
+                New study ref
+              </span>
+            </div>
           )}
           {onClose && !onMenuClick && (
             <button
@@ -200,37 +212,24 @@ export function ChatPanel({
                 <p className="whitespace-pre-wrap break-words">{message.content}</p>
               )}
               {message.role === "assistant" && (message.videoChunkId || message.bookChunkId) && (
-                <div className="mt-3 flex flex-wrap gap-3">
+                <div className="mt-3 flex flex-wrap gap-1.5">
                   {message.videoChunkId && onOpenVideoChunk && (
-                    <div className="flex flex-col items-start gap-1">
-                      <button
-                        type="button"
-                        onClick={() => onOpenVideoChunk(message.videoChunkId!)}
-                        className="inline-flex items-center gap-1 rounded-full border border-accent/35 bg-accent-dim px-2.5 py-1 text-[10px] font-semibold text-accent-strong"
-                      >
-                        <PlayCircle size={12} /> Lecture moment
-                      </button>
-                      {/* First-run discoverability nudge for new mobile users — desktop
-                          already has the always-visible header icon + side panel, so
-                          this would just be noise there. */}
-                      <span className="text-[9px] leading-tight text-muted-2 md:hidden">
-                        🎬 There&apos;s a lecture clip for this — tap to watch
-                      </span>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => onOpenVideoChunk(message.videoChunkId!)}
+                      className="inline-flex items-center gap-1 rounded-full border border-accent/35 bg-accent-dim px-2.5 py-1 text-[10px] font-semibold text-accent-strong"
+                    >
+                      <PlayCircle size={12} /> Lecture moment
+                    </button>
                   )}
                   {message.bookChunkId && onOpenBookChunk && (
-                    <div className="flex flex-col items-start gap-1">
-                      <button
-                        type="button"
-                        onClick={() => onOpenBookChunk(message.bookChunkId!)}
-                        className="inline-flex items-center gap-1 rounded-full border border-border-strong bg-surface-2 px-2.5 py-1 text-[10px] font-semibold text-foreground"
-                      >
-                        <BookOpen size={12} /> Study reference
-                      </button>
-                      <span className="text-[9px] leading-tight text-muted-2 md:hidden">
-                        📖 There&apos;s a study reference too — tap to open
-                      </span>
-                    </div>
+                    <button
+                      type="button"
+                      onClick={() => onOpenBookChunk(message.bookChunkId!)}
+                      className="inline-flex items-center gap-1 rounded-full border border-border-strong bg-surface-2 px-2.5 py-1 text-[10px] font-semibold text-foreground"
+                    >
+                      <BookOpen size={12} /> Study reference
+                    </button>
                   )}
                 </div>
               )}
