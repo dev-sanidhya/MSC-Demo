@@ -166,7 +166,12 @@ export default function Home() {
   }, [paneTree, focusedPaneId, sessions]);
 
   const showVideo = Boolean(focusedSession?.activeVideoChunkId && !focusedSession.videoDismissed);
-  const showBook = Boolean(focusedSession?.activeBookChunkId && !focusedSession.bookDismissed);
+  const hasCompletedAnswer = Boolean(
+    focusedSession?.messages.some(
+      (message) => message.role === "assistant" && message.content.trim()
+    )
+  );
+  const showBook = Boolean(hasCompletedAnswer && !focusedSession?.bookDismissed);
 
   const activeVideoChunk = useMemo(
     () => videoChunks.find((c) => c.id === focusedSession?.activeVideoChunkId),

@@ -17,8 +17,29 @@ export function BookPanel({ chunk, chunks, onSelect, onClose }: BookPanelProps) 
 
   if (!chunk) {
     return (
-      <div className="flex flex-1 items-center justify-center text-sm text-muted">
-        No book reference yet
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <div className="flex w-full shrink-0 items-center justify-between px-4 py-3.5">
+          <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
+            <BookOpen size={13} className="text-accent" />
+            Book Reference
+          </div>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-md p-1 text-muted-2 hover:bg-surface-2 hover:text-foreground"
+              aria-label="Close book reference panel"
+            >
+              <X size={13} />
+            </button>
+          )}
+        </div>
+        <div className="flex flex-1 items-center px-4 pb-4">
+          <p className="max-w-sm text-sm leading-relaxed text-muted">
+            No exact textbook page was found for this doubt in the supplied volume.
+            The lecture clip above is the grounded source for this answer.
+          </p>
+        </div>
       </div>
     );
   }
