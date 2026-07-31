@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { PlayCircle, X } from "lucide-react";
 import type { VideoChunk } from "@/lib/types";
 import { clsx } from "clsx";
@@ -18,6 +19,8 @@ function formatTimestamp(seconds: number) {
 }
 
 export function VideoPanel({ chunk, chunks, onSelect, onClose }: VideoPanelProps) {
+  const [showAllRelated, setShowAllRelated] = useState(false);
+
   if (!chunk) {
     return (
       <div className="flex flex-1 items-center justify-center border-b border-border-subtle text-sm text-muted">
@@ -73,14 +76,14 @@ export function VideoPanel({ chunk, chunks, onSelect, onClose }: VideoPanelProps
       </div>
 
       {chunks.length > 1 && (
-        <div className="flex flex-wrap gap-1.5 px-4 py-3">
-          {chunks.map((c) => (
+        <div className="flex items-center gap-1.5 overflow-x-auto px-4 py-2.5 [scrollbar-width:thin]">
+          {(showAllRelated ? chunks : chunks.slice(0, 5)).map((c) => (
             <button
               key={c.id}
               type="button"
               onClick={() => onSelect(c.id)}
               className={clsx(
-                "truncate rounded-full border px-2.5 py-1 text-[10px] font-medium transition-colors",
+                "shrink-0 whitespace-nowrap rounded-full border px-2.5 py-1 text-[10px] font-medium transition-colors",
                 c.id === chunk.id
                   ? "border-accent/50 bg-accent-dim text-accent-strong"
                   : "border-border-subtle text-muted hover:border-border-strong hover:text-foreground"
@@ -90,6 +93,15 @@ export function VideoPanel({ chunk, chunks, onSelect, onClose }: VideoPanelProps
               {c.lecture} · {c.topic}
             </button>
           ))}
+          {chunks.length > 5 && (
+            <button
+              type="button"
+              onClick={() => setShowAllRelated((visible) => !visible)}
+              className="shrink-0 whitespace-nowrap rounded-full border border-border-subtle px-2.5 py-1 text-[10px] font-medium text-muted hover:border-border-strong hover:text-foreground"
+            >
+              {showAllRelated ? "Show fewer" : `+${chunks.length - 5} more`}
+            </button>
+          )}
         </div>
       )}
     </div>

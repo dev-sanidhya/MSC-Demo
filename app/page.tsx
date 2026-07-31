@@ -91,8 +91,11 @@ export default function Home() {
 
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(288);
-  const [rightWidth, setRightWidth] = useState(420);
-  const [videoPanelHeightPct, setVideoPanelHeightPct] = useState(60);
+  // Give the actual lecture moment precedence over the supporting book pane.
+  // A 60/40 split made a 16:9 player needlessly small whenever both sources
+  // were open, especially when the book has no exact matching page.
+  const [rightWidth, setRightWidth] = useState(480);
+  const [videoPanelHeightPct, setVideoPanelHeightPct] = useState(74);
   const [thinkingSessionIds, setThinkingSessionIds] = useState<string[]>([]);
   const [isMobile, setIsMobile] = useState(false);
   const [hasHydratedStorage, setHasHydratedStorage] = useState(false);
@@ -332,7 +335,7 @@ export default function Home() {
 
   const handleVerticalSplitResize = useCallback((delta: number) => {
     const containerHeight = asideRef.current?.clientHeight ?? 800;
-    setVideoPanelHeightPct((pct) => clamp(pct + (delta / containerHeight) * 100, 25, 80));
+    setVideoPanelHeightPct((pct) => clamp(pct + (delta / containerHeight) * 100, 35, 85));
   }, []);
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
