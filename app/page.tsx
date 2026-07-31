@@ -44,10 +44,12 @@ function createEmptySession(id: string, title = "New chat"): ChatSession {
   return { id, title, messages: [], createdAt: Date.now() };
 }
 
-let messageCounter = 1000;
-
 function createSessionId() {
   return `session-${crypto.randomUUID()}`;
+}
+
+function createMessageId() {
+  return `msg-${crypto.randomUUID()}`;
 }
 
 function deriveTitle(text: string): string {
@@ -110,13 +112,20 @@ export default function Home() {
       if (saved.length > 0) {
         const usedIds = new Set<string>();
         const restored = saved.map((session) => {
-          if (session.id && !usedIds.has(session.id)) {
-            usedIds.add(session.id);
-            return session;
-          }
-          const id = createSessionId();
+          const id = session.id && !usedIds.has(session.id) ? session.id : createSessionId();
           usedIds.add(id);
-          return { ...session, id };
+
+          // Early builds used a counter that restarted after a page refresh,
+          // leaving some persisted sessions with duplicate React keys.
+          const usedMessageIds = new Set<string>();
+          const messages = session.messages.map((message) => {
+            const messageId =
+              message.id && !usedMessageIds.has(message.id) ? message.id : createMessageId();
+            usedMessageIds.add(messageId);
+            return messageId === message.id ? message : { ...message, id: messageId };
+          });
+
+          return { ...session, id, messages };
         });
         setSessions(restored);
         const leaf = makeLeaf(restored[0].id);
@@ -386,7 +395,7 @@ export default function Home() {
 
   const handleSend = useCallback((sessionId: string, text: string) => {
     const userMessage: ChatMessage = {
-      id: `msg-${messageCounter++}`,
+      id: createMessageId(),
       role: "user",
       content: text,
       createdAt: Date.now(),
@@ -413,7 +422,7 @@ export default function Home() {
     const history = (sessions.find((session) => session.id === sessionId)?.messages ?? [])
       .slice(-6)
       .map(({ role, content }) => ({ role, content }));
-    const assistantMessageId = `msg-${messageCounter++}`;
+    const assistantMessageId = createMessageId();
     setSessions((prev) => prev.map((s) => s.id === sessionId ? {
       ...s,
       messages: [...s.messages, { id: assistantMessageId, role: "assistant", content: "", createdAt: Date.now() }],
