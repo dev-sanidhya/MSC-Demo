@@ -595,6 +595,7 @@ export default function Home() {
           openPaneIds={openPaneSessionIds}
           collapsed={sidebarCollapsed}
           width={sidebarWidth}
+          draggable
           onToggleCollapsed={() => setSidebarCollapsed((v) => !v)}
           onSelect={handleSelect}
           onNew={handleNewChat}
@@ -676,6 +677,7 @@ export default function Home() {
           openPaneIds={openPaneSessionIds}
           collapsed={false}
           width={280}
+          draggable={false}
           onToggleCollapsed={() => setMobileMenuOpen(false)}
           onSelect={handleMobileSelect}
           onNew={handleMobileNewChat}

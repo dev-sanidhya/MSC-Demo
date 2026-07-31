@@ -57,8 +57,12 @@ export function ChatPanel({
   useEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
+    // Capped lower on mobile — 160px of growth room reads fine on a desktop
+    // side pane but eats a third of a phone screen once someone pastes a
+    // couple of sentences.
+    const maxHeight = window.matchMedia("(max-width: 767px)").matches ? 92 : 160;
     el.style.height = "0px";
-    el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
+    el.style.height = `${Math.min(el.scrollHeight, maxHeight)}px`;
   }, [draft]);
 
   function handleSend() {
@@ -196,24 +200,37 @@ export function ChatPanel({
                 <p className="whitespace-pre-wrap break-words">{message.content}</p>
               )}
               {message.role === "assistant" && (message.videoChunkId || message.bookChunkId) && (
-                <div className="mt-3 flex flex-wrap gap-1.5">
+                <div className="mt-3 flex flex-wrap gap-3">
                   {message.videoChunkId && onOpenVideoChunk && (
-                    <button
-                      type="button"
-                      onClick={() => onOpenVideoChunk(message.videoChunkId!)}
-                      className="inline-flex items-center gap-1 rounded-full border border-accent/35 bg-accent-dim px-2.5 py-1 text-[10px] font-semibold text-accent-strong"
-                    >
-                      <PlayCircle size={12} /> Lecture moment
-                    </button>
+                    <div className="flex flex-col items-start gap-1">
+                      <button
+                        type="button"
+                        onClick={() => onOpenVideoChunk(message.videoChunkId!)}
+                        className="inline-flex items-center gap-1 rounded-full border border-accent/35 bg-accent-dim px-2.5 py-1 text-[10px] font-semibold text-accent-strong"
+                      >
+                        <PlayCircle size={12} /> Lecture moment
+                      </button>
+                      {/* First-run discoverability nudge for new mobile users — desktop
+                          already has the always-visible header icon + side panel, so
+                          this would just be noise there. */}
+                      <span className="text-[9px] leading-tight text-muted-2 md:hidden">
+                        🎬 There&apos;s a lecture clip for this — tap to watch
+                      </span>
+                    </div>
                   )}
                   {message.bookChunkId && onOpenBookChunk && (
-                    <button
-                      type="button"
-                      onClick={() => onOpenBookChunk(message.bookChunkId!)}
-                      className="inline-flex items-center gap-1 rounded-full border border-border-strong bg-surface-2 px-2.5 py-1 text-[10px] font-semibold text-foreground"
-                    >
-                      <BookOpen size={12} /> Study reference
-                    </button>
+                    <div className="flex flex-col items-start gap-1">
+                      <button
+                        type="button"
+                        onClick={() => onOpenBookChunk(message.bookChunkId!)}
+                        className="inline-flex items-center gap-1 rounded-full border border-border-strong bg-surface-2 px-2.5 py-1 text-[10px] font-semibold text-foreground"
+                      >
+                        <BookOpen size={12} /> Study reference
+                      </button>
+                      <span className="text-[9px] leading-tight text-muted-2 md:hidden">
+                        📖 There&apos;s a study reference too — tap to open
+                      </span>
+                    </div>
                   )}
                 </div>
               )}

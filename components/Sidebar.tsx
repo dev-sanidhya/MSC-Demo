@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   SortableContext,
   useSortable,
@@ -25,12 +25,20 @@ type SidebarProps = {
   openPaneIds: string[];
   collapsed: boolean;
   width: number;
+  /** Desktop/tablet only — lets a session be dragged into the pane area to
+   * split, and into the list to reorder. Mobile has no pane-split (see
+   * app/page.tsx) and touch long-press-to-drag conflicts with scrolling the
+   * list, so the mobile drawer passes false and gets a long-press-to-delete
+   * row instead. */
+  draggable: boolean;
   onToggleCollapsed: () => void;
   onSelect: (id: string) => void;
   onNew: () => void;
   onRename: (id: string, title: string) => void;
   onDelete: (id: string) => void;
 };
+
+const LONG_PRESS_MS = 550;
 
 function SortableSessionRow({
   session,
@@ -175,12 +183,166 @@ function SortableSessionRow({
   );
 }
 
+// Mobile row: no drag (see draggable prop doc above). Rename stays a tap
+// target since touch has no hover to reveal it; delete instead needs a
+// long-press, matching the native-app pattern this is trying to feel like.
+// The outer div stays mounted across the normal <-> confirm-delete states so
+// the pointerup that ends the press keeps landing on the same element even
+// if a long-press mid-gesture swaps its children out from under the finger.
+function SessionRow({
+  session,
+  isActive,
+  isOpenInPane,
+  onSelect,
+  onRename,
+  onDelete,
+}: {
+  session: ChatSession;
+  isActive: boolean;
+  isOpenInPane: boolean;
+  onSelect: (id: string) => void;
+  onRename: (id: string, title: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(session.title);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressFired = useRef(false);
+
+  function commitRename() {
+    const trimmed = draft.trim();
+    onRename(session.id, trimmed.length > 0 ? trimmed : session.title);
+    setEditing(false);
+  }
+
+  function handlePointerDown() {
+    if (confirmingDelete) return;
+    longPressFired.current = false;
+    longPressTimer.current = setTimeout(() => {
+      longPressFired.current = true;
+      setConfirmingDelete(true);
+    }, LONG_PRESS_MS);
+  }
+
+  function clearLongPress() {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  }
+
+  function handleRowTap() {
+    if (longPressFired.current) {
+      // The long-press already opened the delete confirm; swallow the
+      // trailing click so it doesn't also select the chat.
+      longPressFired.current = false;
+      return;
+    }
+    onSelect(session.id);
+  }
+
+  return (
+    <div
+      onPointerDown={handlePointerDown}
+      onPointerUp={clearLongPress}
+      onPointerLeave={clearLongPress}
+      onPointerCancel={clearLongPress}
+      className={clsx(
+        "flex items-center gap-1.5 rounded-md px-2 py-2.5 text-left transition-colors",
+        confirmingDelete
+          ? "border border-danger/40 bg-danger/10"
+          : isActive
+            ? "bg-surface-2 border border-border-strong"
+            : "border border-transparent active:bg-surface-2/60"
+      )}
+    >
+      {confirmingDelete ? (
+        <>
+          <p className="min-w-0 flex-1 truncate text-sm font-medium text-foreground/80">
+            Delete &ldquo;{session.title}&rdquo;?
+          </p>
+          <button
+            type="button"
+            onClick={() => onDelete(session.id)}
+            className="shrink-0 rounded-md bg-danger px-2.5 py-1 text-[11px] font-semibold text-white"
+          >
+            Delete
+          </button>
+          <button
+            type="button"
+            onClick={() => setConfirmingDelete(false)}
+            className="shrink-0 rounded-md border border-border-subtle px-2.5 py-1 text-[11px] text-muted"
+          >
+            Cancel
+          </button>
+        </>
+      ) : (
+        <>
+          <button type="button" onClick={handleRowTap} className="min-w-0 flex-1 text-left">
+            {editing ? (
+              <input
+                autoFocus
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onBlur={commitRename}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    commitRename();
+                  }
+                  if (e.key === "Escape") {
+                    setDraft(session.title);
+                    setEditing(false);
+                  }
+                }}
+                onClick={(e) => e.stopPropagation()}
+                className="w-full rounded border border-accent/50 bg-background px-1 py-0.5 text-sm font-medium text-foreground outline-none"
+              />
+            ) : (
+              <span className="flex items-center gap-1.5">
+                {isOpenInPane && (
+                  <span
+                    className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
+                    title="Open in a pane"
+                  />
+                )}
+                <p
+                  className={clsx(
+                    "truncate text-sm font-medium",
+                    isActive ? "text-foreground" : "text-foreground/80"
+                  )}
+                >
+                  {session.title}
+                </p>
+              </span>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setDraft(session.title);
+              setEditing((v) => !v);
+            }}
+            className="shrink-0 text-muted-2 hover:text-accent"
+            aria-label="Rename chat"
+          >
+            {editing ? <Check size={13} /> : <Pencil size={13} />}
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
 export function Sidebar({
   sessions,
   activeSessionId,
   openPaneIds,
   collapsed,
   width,
+  draggable,
   onToggleCollapsed,
   onSelect,
   onNew,
@@ -229,25 +391,41 @@ export function Sidebar({
       </div>
 
       <div className="flex-1 overflow-y-auto px-2 pb-2">
-        <SortableContext
-          items={sessions.map((s) => s.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          <div className={clsx("flex flex-col", collapsed ? "gap-1.5 items-center" : "gap-1")}>
+        {draggable ? (
+          <SortableContext
+            items={sessions.map((s) => s.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className={clsx("flex flex-col", collapsed ? "gap-1.5 items-center" : "gap-1")}>
+              {sessions.map((session) => (
+                <SortableSessionRow
+                  key={session.id}
+                  session={session}
+                  isActive={session.id === activeSessionId}
+                  isOpenInPane={openPaneIds.includes(session.id)}
+                  collapsed={collapsed}
+                  onSelect={onSelect}
+                  onRename={onRename}
+                  onDelete={onDelete}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        ) : (
+          <div className="flex flex-col gap-1">
             {sessions.map((session) => (
-              <SortableSessionRow
+              <SessionRow
                 key={session.id}
                 session={session}
                 isActive={session.id === activeSessionId}
                 isOpenInPane={openPaneIds.includes(session.id)}
-                collapsed={collapsed}
                 onSelect={onSelect}
                 onRename={onRename}
                 onDelete={onDelete}
               />
             ))}
           </div>
-        </SortableContext>
+        )}
       </div>
 
       {!collapsed && (
@@ -256,7 +434,9 @@ export function Sidebar({
             Vibrant Academy · Kota
           </p>
           <p className="mt-1 text-[10px] leading-relaxed text-muted-2/70">
-            Drag a chat into the main view to open it side-by-side
+            {draggable
+              ? "Drag a chat into the main view to open it side-by-side"
+              : "Long-press a chat to delete it"}
           </p>
         </div>
       )}
