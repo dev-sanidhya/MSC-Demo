@@ -1,0 +1,10 @@
+node_modules
+.next
+.git
+.venv
+backend/.qdrant
+backend/.cache
+backend/data
+hf-space
+*.md
+.vercel

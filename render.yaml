@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: msc-demo-retrieval
+    runtime: docker
+    plan: free
+    dockerfilePath: backend/Dockerfile
+    dockerContext: .
