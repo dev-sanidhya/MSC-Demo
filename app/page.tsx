@@ -429,24 +429,36 @@ export default function Home() {
         let buffer = "";
         let content = "";
         let sources: Omit<ChatApiResponse, "content"> = { videoChunkId: null, bookChunkId: null };
+        const processEvent = (event: string) => {
+          const data = event.replace(/^data: /, "");
+          if (!data || data === "[DONE]") return;
+          const payload = JSON.parse(data) as {
+            type: string;
+            content?: string;
+            videoChunkId?: string | null;
+            bookChunkId?: string | null;
+          };
+          if (payload.type === "token" && payload.content) {
+            content += payload.content;
+            setSessions((prev) => prev.map((s) => s.id === sessionId ? {
+              ...s,
+              messages: s.messages.map((m) => m.id === assistantMessageId ? { ...m, content } : m),
+            } : s));
+          }
+          if (payload.type === "sources") {
+            sources = {
+              videoChunkId: payload.videoChunkId ?? null,
+              bookChunkId: payload.bookChunkId ?? null,
+            };
+          }
+        };
         while (true) {
           const { done, value } = await reader.read();
           buffer += decoder.decode(value ?? new Uint8Array(), { stream: !done });
           const events = buffer.split("\n\n");
           buffer = events.pop() ?? "";
-          for (const event of events) {
-            const data = event.replace(/^data: /, "");
-            if (!data || data === "[DONE]") continue;
-            const payload = JSON.parse(data) as { type: string; content?: string; videoChunkId?: string | null; bookChunkId?: string | null };
-            if (payload.type === "token" && payload.content) {
-              content += payload.content;
-              setSessions((prev) => prev.map((s) => s.id === sessionId ? {
-                ...s,
-                messages: s.messages.map((m) => m.id === assistantMessageId ? { ...m, content } : m),
-              } : s));
-            }
-            if (payload.type === "sources") sources = { videoChunkId: payload.videoChunkId ?? null, bookChunkId: payload.bookChunkId ?? null };
-          }
+          events.forEach(processEvent);
+          if (done && buffer.trim()) processEvent(buffer);
           if (done) break;
         }
         return { content, ...sources };

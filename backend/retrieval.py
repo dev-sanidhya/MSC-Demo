@@ -4,11 +4,9 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from threading import Lock
 from typing import Any
 
 from fastembed import SparseTextEmbedding, TextEmbedding
-from fastembed.rerank.cross_encoder import TextCrossEncoder
 from qdrant_client import QdrantClient, models
 
 
@@ -18,7 +16,6 @@ DENSE_NAME = "dense"
 SPARSE_NAME = "sparse"
 DENSE_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 SPARSE_MODEL = "Qdrant/bm25"
-RERANK_MODEL = "jinaai/jina-reranker-v2-base-multilingual"
 QUERY_CONCEPTS = {
     "iodoform": "Iodoform Test",
     "lucas": "Lucas Test",
@@ -36,10 +33,8 @@ QUERY_CONCEPTS = {
 
 class HybridRetriever:
     def __init__(self) -> None:
-        self._lock = Lock()
         self._dense: TextEmbedding | None = None
         self._sparse: SparseTextEmbedding | None = None
-        self._reranker: TextCrossEncoder | None = None
         self.client = QdrantClient(path=str(ROOT / ".qdrant"))
 
     @property
@@ -53,12 +48,6 @@ class HybridRetriever:
         if self._sparse is None:
             self._sparse = SparseTextEmbedding(SPARSE_MODEL, cache_dir=str(ROOT / ".cache"))
         return self._sparse
-
-    @property
-    def reranker(self) -> TextCrossEncoder:
-        if self._reranker is None:
-            self._reranker = TextCrossEncoder(RERANK_MODEL, cache_dir=str(ROOT / ".cache"))
-        return self._reranker
 
     def ready(self) -> bool:
         return self.client.collection_exists(COLLECTION)
@@ -111,24 +100,24 @@ class HybridRetriever:
         response = self.client.query_points(
             COLLECTION,
             prefetch=[
-                models.Prefetch(query=dense.tolist(), using=DENSE_NAME, limit=30),
+                models.Prefetch(query=dense.tolist(), using=DENSE_NAME, limit=16),
                 models.Prefetch(
                     query=models.SparseVector(
                         indices=sparse.indices.tolist(), values=sparse.values.tolist()
                     ),
                     using=SPARSE_NAME,
-                    limit=30,
+                    limit=16,
                 ),
             ],
             query=models.FusionQuery(fusion=models.Fusion.RRF),
-            limit=24,
+            limit=12,
             with_payload=True,
         )
-        candidates = [point.payload for point in response.points if point.payload]
+        candidates = [
+            (point.score, point.payload) for point in response.points if point.payload
+        ]
         if not candidates:
             return {"videos": [], "books": []}
-        with self._lock:
-            scores = list(self.reranker.rerank(query, [item["searchText"] for item in candidates]))
         expected_labels = {
             label for term, label in QUERY_CONCEPTS.items() if term in query.lower()
         }
@@ -142,9 +131,7 @@ class HybridRetriever:
 
         ranked = [
             item
-            for _, item in sorted(
-                zip(scores, candidates, strict=True), key=ranking_key, reverse=True
-            )
+            for _, item in sorted(candidates, key=ranking_key, reverse=True)
         ]
         videos: list[dict[str, Any]] = []
         books: list[dict[str, Any]] = []

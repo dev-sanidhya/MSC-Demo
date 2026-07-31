@@ -19,7 +19,7 @@ Repo: https://github.com/dev-sanidhya/MSC-Demo
 `backend/build_corpus.py` creates page-bounded book chunks and caption-cue
 lecture segments. `backend/build_index.py` stores them in local Qdrant with
 multilingual dense and BM25 sparse vectors. `backend/app.py` performs reciprocal
-rank fusion, multilingual reranking, exact-label boosts, and adjacent-result
+rank fusion, exact-label boosts, and adjacent-result
 deduplication. The Next.js chat route rewrites ambiguous follow-ups, requests
 retrieval, sends compact source blocks to Groq, and exposes only the source IDs
 the generated answer actually cited.
@@ -35,7 +35,8 @@ tenant model, or production observability layer.
   raw YouTube caption cues. Segment boundaries keep their exact cue times.
 - **Hybrid retrieval.** Multilingual semantic search covers paraphrases and
   Hindi/English code-switching; sparse BM25 preserves reagent and named-reaction
-  precision. A reranker makes the final selection.
+  precision. Exact-label boosts keep named reactions and tests precise without
+  adding a slow local reranker to the demo request path.
 - **Grounded citations.** Search rank alone never creates a visible citation.
   The answer must reference a supplied source marker before the corresponding
   video or book panel is attached.

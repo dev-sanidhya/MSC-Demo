@@ -19,7 +19,7 @@ npm run dev
 Open [http://localhost:3001](http://localhost:3001). The retrieval service runs
 locally on port `8765` and `npm run dev` starts both processes.
 
-The first setup downloads the embedding and reranking models and builds the
+The first setup downloads the embedding model and builds the
 ignored local Qdrant index. Later runs only need `npm run dev`; rebuild the
 index after changing source transcripts, the PDF extraction, or chunking.
 
@@ -31,8 +31,7 @@ index after changing source transcripts, the PDF extraction, or chunking.
   exact.
 - Qdrant fuses multilingual dense search and BM25 sparse search using reciprocal
   rank fusion.
-- A multilingual cross-encoder reranks candidates, with small metadata boosts
-  for exact named reactions and tests.
+- Exact named reactions and tests receive metadata boosts after hybrid fusion.
 - The chat model receives compact source blocks and must cite their stable IDs.
   Only IDs actually used in the answer are shown in the source panels.
 

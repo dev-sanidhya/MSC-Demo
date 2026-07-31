@@ -8,6 +8,13 @@ app = FastAPI(title="MSC Demo Retrieval", docs_url=None, redoc_url=None)
 retriever = HybridRetriever()
 
 
+@app.on_event("startup")
+def warm_retrieval_models() -> None:
+    """Pay the local-model startup cost before a student sends the first doubt."""
+    _ = retriever.dense
+    _ = retriever.sparse
+
+
 class SearchRequest(BaseModel):
     query: str = Field(min_length=1, max_length=1000)
     limit_per_type: int = Field(default=3, ge=1, le=5)
