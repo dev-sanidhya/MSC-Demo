@@ -35,6 +35,9 @@ export type BookChunk = {
   chapterTitle: string;
   /** e.g. "Ch. 29 Alkene — Dehydration Of Alcohols" */
   section: string;
+  sourceName: string;
+  sourceTitle: string;
+  url: string;
   text: string;
   keywords: string[];
 };

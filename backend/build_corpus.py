@@ -1,8 +1,8 @@
 """Build demo-sized, provenance-safe retrieval documents.
 
-The lecture corpus is rebuilt from raw YouTube caption cues so every segment
-has a deterministic time range. The book corpus is rebuilt page-by-page so a
-citation can never drift onto a neighbouring page.
+Lecture evidence is rebuilt from raw YouTube caption cues. Study references
+come from a hand-curated Chemistry LibreTexts manifest: every entry has a
+specific article URL instead of an inferred or fabricated textbook page.
 """
 
 from __future__ import annotations
@@ -199,40 +199,42 @@ def split_page(text: str, target: int = 1100, overlap: int = 140) -> list[str]:
     return chunks
 
 
-def build_book_documents() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    pages = read_json(DATA / "book-pages.json")
+def build_reference_documents() -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Turn the vetted LibreTexts manifest into one provenance-safe document per article."""
+    sources = read_json(DATA / "libretexts-sources.json")
     documents: list[dict[str, Any]] = []
     ui_chunks: list[dict[str, Any]] = []
-    for page in pages:
-        for index, text in enumerate(split_page(page["text"])):
-            # Printed page labels can repeat in front matter or when a footer is
-            # unreadable. The physical PDF page makes provenance IDs stable and
-            # globally unique while retaining the student-facing printed page.
-            chunk_id = (
-                f"book:pdf{page['pdfPage']:04d}:p{page['page']:04d}:{index:02d}"
-            )
-            section = f"Ch. {page['chapterNumber']} {page['chapterTitle']}"
-            metadata = {
-                "page": page["page"],
-                "pageEnd": page["page"],
-                "pdfPage": page["pdfPage"],
-                "chapterNumber": page["chapterNumber"],
-                "chapterTitle": page["chapterTitle"],
-                "section": section,
-                "keywords": [],
-                "parser": "pypdf-page-bounded",
+    for index, source in enumerate(sources, start=1):
+        text = clean_text(source["summary"])
+        metadata = {
+            # Retained only for the existing client data shape. These are source
+            # ordering fields, not a claim about a printed textbook page.
+            "page": index,
+            "pageEnd": index,
+            "pdfPage": index,
+            "chapterNumber": index,
+            "chapterTitle": "Chemistry LibreTexts",
+            "section": source["section"],
+            "sourceTitle": source["title"],
+            "sourceName": "Chemistry LibreTexts",
+            "url": source["url"],
+            "keywords": source["keywords"],
+            "fallback": source.get("fallback", False),
+            "parser": "curated-libretexts-manifest",
+        }
+        documents.append(
+            {
+                "id": source["id"],
+                "sourceType": "book",
+                "text": text,
+                "context": text,
+                "searchText": clean_text(
+                    f"{source['title']} {source['section']} {' '.join(source['keywords'])} {text}"
+                ),
+                "metadata": metadata,
             }
-            documents.append(
-                {
-                    "id": chunk_id,
-                    "sourceType": "book",
-                    "text": text,
-                    "context": text,
-                    "searchText": clean_text(f"{section} page {page['page']} {text}"),
-                    "metadata": metadata,
-                }
-            )
-            ui_chunks.append({"id": chunk_id, "text": text, **metadata})
+        )
+        ui_chunks.append({"id": source["id"], "text": text, **metadata})
     return documents, ui_chunks
 
 
@@ -254,17 +256,17 @@ def main() -> None:
         )
 
     video_documents, video_ui = build_video_documents()
-    book_documents, book_ui = build_book_documents()
-    documents = [*video_documents, *book_documents]
+    reference_documents, reference_ui = build_reference_documents()
+    documents = [*video_documents, *reference_documents]
     backend_data = ROOT / "backend" / "data"
     backend_data.mkdir(parents=True, exist_ok=True)
     with (backend_data / "documents.jsonl").open("w", encoding="utf-8") as handle:
         for document in documents:
             handle.write(json.dumps(document, ensure_ascii=False) + "\n")
     write_json(DATA / "video-chunks-v2.json", video_ui)
-    write_json(DATA / "book-chunks-v2.json", book_ui)
+    write_json(DATA / "book-chunks-v2.json", reference_ui)
     print(
-        f"Built {len(video_documents)} lecture segments and {len(book_documents)} page-safe book chunks."
+        f"Built {len(video_documents)} lecture segments and {len(reference_documents)} curated study references."
     )
 
 

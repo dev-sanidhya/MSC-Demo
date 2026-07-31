@@ -8,6 +8,6 @@ npm run retrieval:setup
 npm run dev
 ```
 
-`retrieval:setup` rebuilds page-safe book chunks and caption-cue lecture
-segments, downloads the local embedding model on first use, and
-creates the ignored `backend/.qdrant` index.
+`retrieval:setup` rebuilds caption-cue lecture segments and the curated
+Chemistry LibreTexts reference manifest, downloads the local embedding model
+on first use, and creates the ignored `backend/.qdrant` index.

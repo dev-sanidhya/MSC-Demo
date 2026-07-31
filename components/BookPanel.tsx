@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BookOpen, ChevronDown, X } from "lucide-react";
+import { BookOpen, ChevronDown, ExternalLink, X } from "lucide-react";
 import type { BookChunk } from "@/lib/types";
 import { clsx } from "clsx";
 
@@ -21,24 +21,29 @@ export function BookPanel({ chunk, chunks, onSelect, onClose }: BookPanelProps) 
         <div className="flex w-full shrink-0 items-center justify-between px-4 py-3.5">
           <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
             <BookOpen size={13} className="text-accent" />
-            Book Reference
+            Study Reference
           </div>
           {onClose && (
             <button
               type="button"
               onClick={onClose}
               className="rounded-md p-1 text-muted-2 hover:bg-surface-2 hover:text-foreground"
-              aria-label="Close book reference panel"
+              aria-label="Close study reference panel"
             >
               <X size={13} />
             </button>
           )}
         </div>
         <div className="flex flex-1 items-center px-4 pb-4">
-          <p className="max-w-sm text-sm leading-relaxed text-muted">
-            No exact textbook page was found for this doubt in the supplied volume.
-            The lecture clip above is the grounded source for this answer.
-          </p>
+          <a
+            href="https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_%28OpenStax%29/17%3A_Alcohols_and_Phenols"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-full border border-border-subtle bg-surface-2 px-2.5 py-1 text-xs text-muted transition-colors hover:border-accent/50 hover:text-foreground"
+          >
+            <ExternalLink size={12} className="text-accent" />
+            Open Alcohols and Phenols overview
+          </a>
         </div>
       </div>
     );
@@ -55,9 +60,9 @@ export function BookPanel({ chunk, chunks, onSelect, onClose }: BookPanelProps) 
           <BookOpen size={13} className="shrink-0 text-accent" />
           <div className="min-w-0">
             <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
-              Book Reference
+              Study Reference
             </p>
-            <p className="truncate text-sm font-medium text-foreground">{chunk.section}</p>
+            <p className="truncate text-sm font-medium text-foreground">{chunk.sourceTitle}</p>
           </div>
         </button>
         <div className="flex shrink-0 items-center gap-1">
@@ -74,7 +79,7 @@ export function BookPanel({ chunk, chunks, onSelect, onClose }: BookPanelProps) 
               type="button"
               onClick={onClose}
               className="rounded-md p-1 text-muted-2 hover:bg-surface-2 hover:text-foreground"
-              aria-label="Close book reference panel"
+              aria-label="Close study reference panel"
             >
               <X size={13} />
             </button>
@@ -84,11 +89,17 @@ export function BookPanel({ chunk, chunks, onSelect, onClose }: BookPanelProps) 
 
       {expanded && (
         <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">
-          <div className="flex items-center justify-between">
-            <span className="rounded-full border border-border-subtle bg-surface-2 px-2 py-0.5 font-mono text-[10px] text-muted">
-              Page {chunk.page}
-            </span>
-          </div>
+          <a
+            href={chunk.url}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border-subtle bg-surface-2 px-2.5 py-1 text-[10px] font-medium text-muted transition-colors hover:border-accent/50 hover:text-foreground"
+            title={chunk.url}
+          >
+            <ExternalLink size={11} className="shrink-0 text-accent" />
+            <span className="truncate">Open on {chunk.sourceName}</span>
+          </a>
+          <p className="mt-3 text-xs font-medium text-muted">{chunk.section}</p>
           <p className="mt-2.5 whitespace-pre-wrap text-sm leading-relaxed text-foreground/85">
             {chunk.text}
           </p>
@@ -108,7 +119,7 @@ export function BookPanel({ chunk, chunks, onSelect, onClose }: BookPanelProps) 
                   )}
                   title={c.section}
                 >
-                  p.{c.page}
+                  {c.sourceTitle}
                 </button>
               ))}
             </div>

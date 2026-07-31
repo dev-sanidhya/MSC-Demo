@@ -1,7 +1,7 @@
 // Real data only, no mock/seeded content. Loads the transcript-derived
 // video chunks (data/video-chunks.json), playlist metadata (data/videos.json)
-// and book chunks (data/book-chunks.json) produced by the offline pipeline
-// in scripts/ (fetch-transcripts, chunk-transcripts, extract-book, chunk-book).
+// and curated Chemistry LibreTexts study references produced by the local
+// retrieval-corpus build.
 
 import type { BookChunk, VideoChunk, VideoMeta } from "./types";
 import videoChunksRaw from "@/data/video-chunks-v2.json";

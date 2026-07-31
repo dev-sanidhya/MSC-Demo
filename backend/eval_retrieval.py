@@ -14,6 +14,9 @@ QUESTIONS = [
     "How does Grignard reagent react with an ester to give tertiary alcohol?",
     "Explain hydroboration oxidation of alkenes to give alcohols",
     "Why is phenol more acidic than ethanol?",
+    "Explain Kolbe Schmitt reaction of phenol",
+    "How does anisole react with HI?",
+    "How do SOCl2 and PBr3 convert alcohols to halides?",
 ]
 
 
@@ -43,6 +46,6 @@ if __name__ == "__main__":
             print(f"  VIDEO {meta['lecture']} @{meta['startSeconds']}s - {meta['topic']}")
         for source in result["books"]:
             meta = source["metadata"]
-            print(f"  BOOK  p.{meta['page']} - {meta['section']}")
+            print(f"  REFERENCE {meta['sourceTitle']} - {meta['url']}")
     if retriever is not None:
         retriever.client.close()

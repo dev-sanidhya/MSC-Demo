@@ -100,17 +100,17 @@ class HybridRetriever:
         response = self.client.query_points(
             COLLECTION,
             prefetch=[
-                models.Prefetch(query=dense.tolist(), using=DENSE_NAME, limit=16),
+                models.Prefetch(query=dense.tolist(), using=DENSE_NAME, limit=40),
                 models.Prefetch(
                     query=models.SparseVector(
                         indices=sparse.indices.tolist(), values=sparse.values.tolist()
                     ),
                     using=SPARSE_NAME,
-                    limit=16,
+                    limit=40,
                 ),
             ],
             query=models.FusionQuery(fusion=models.Fusion.RRF),
-            limit=12,
+            limit=32,
             with_payload=True,
         )
         candidates = [
@@ -124,10 +124,26 @@ class HybridRetriever:
         named_query_terms = {
             term for term in QUERY_CONCEPTS if term in query.lower()
         }
-        def ranking_key(pair: tuple[float, dict[str, Any]]) -> tuple[int, float]:
+        query_tokens = {
+            token for token in query.lower().replace("-", " ").split() if len(token) >= 3
+        }
+
+        def reference_match_score(item: dict[str, Any]) -> int:
+            metadata = item["metadata"]
+            searchable = " ".join(
+                [
+                    metadata.get("sourceTitle", ""),
+                    metadata.get("section", ""),
+                    *metadata.get("keywords", []),
+                ]
+            ).lower()
+            return sum(token in searchable for token in query_tokens)
+
+        def ranking_key(pair: tuple[float, dict[str, Any]]) -> tuple[int, int, float]:
             score, item = pair
             labels = set(item["metadata"].get("keywords", []))
-            return len(expected_labels & labels), score
+            reference_score = reference_match_score(item) if item["sourceType"] == "book" else 0
+            return len(expected_labels & labels), reference_score, score
 
         ranked = [
             item
@@ -149,17 +165,31 @@ class HybridRetriever:
                     continue
                 videos.append(public)
             elif item["sourceType"] == "book" and len(books) < limit_per_type:
-                # Dense search must not force a book citation for a named test
-                # or reaction that this volume never actually mentions.
+                # A study-reference link must match the student's topic. The
+                # old PDF path could cite a semantically nearby page even when
+                # the named test or reagent was absent.
                 book_text = item["searchText"].lower()
                 if named_query_terms and not all(term in book_text for term in named_query_terms):
                     continue
-                if any(existing["metadata"]["page"] == metadata["page"] for existing in books):
+                if reference_match_score(item) == 0:
+                    continue
+                if any(existing["id"] == public["id"] for existing in books):
                     continue
                 books.append(public)
             if len(videos) >= limit_per_type and len(books) >= limit_per_type:
                 break
+        if not books:
+            books = [self._fallback_reference()]
         return {"videos": videos, "books": books}
+
+    def _fallback_reference(self) -> dict[str, Any]:
+        """Return a real chapter hub when no exact article wins, never a fake citation."""
+        source = ROOT / "data" / "documents.jsonl"
+        for line in source.read_text(encoding="utf-8").splitlines():
+            item = json.loads(line)
+            if item["id"] == "libretexts-alcohol-phenol-overview":
+                return self._public(item)
+        raise RuntimeError("LibreTexts fallback reference is missing from the corpus.")
 
     @staticmethod
     def _public(item: dict[str, Any]) -> dict[str, Any]:

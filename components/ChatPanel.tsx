@@ -116,8 +116,8 @@ export function ChatPanel({
                 onOpenBook();
               }}
               className="hidden rounded-md p-1 text-muted-2 hover:bg-surface-2 hover:text-foreground md:block"
-              aria-label="Open book reference"
-              title="Open book reference"
+              aria-label="Open study reference"
+              title="Open study reference"
             >
               <BookOpen size={14} />
             </button>
@@ -143,7 +143,7 @@ export function ChatPanel({
           <div className="mx-auto flex h-full max-w-xl flex-col items-center justify-center gap-3 text-center">
             <Sparkles size={20} className="text-accent" />
             <p className="text-sm text-muted">
-              Learn with the exact lecture moment and textbook context behind every answer.
+              Learn with the exact lecture moment and study reference behind every answer.
             </p>
             <div className="flex flex-wrap justify-center gap-2 pt-1">
               {STARTER_QUESTIONS.map((question) => (
@@ -194,7 +194,7 @@ export function ChatPanel({
                       onClick={() => onOpenBookChunk(message.bookChunkId!)}
                       className="hidden items-center gap-1 rounded-full border border-border-strong bg-surface-2 px-2.5 py-1 text-[10px] font-semibold text-foreground md:inline-flex"
                     >
-                      <BookOpen size={12} /> Book reference
+                      <BookOpen size={12} /> Study reference
                     </button>
                   )}
                 </div>

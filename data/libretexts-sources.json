@@ -1,0 +1,155 @@
+[
+  {
+    "id": "libretexts-alcohol-phenol-overview",
+    "title": "17: Alcohols and Phenols",
+    "url": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_%28OpenStax%29/17%3A_Alcohols_and_Phenols",
+    "section": "Alcohols and phenols chapter overview",
+    "keywords": ["alcohol", "phenol", "ether", "chemistry", "jee"],
+    "summary": "A chapter overview of alcohol and phenol chemistry, including classification, properties, preparation, reactions, oxidation, and phenol chemistry. This is the neutral fallback reading link when a more specific article is not selected.",
+    "fallback": true
+  },
+  {
+    "id": "libretexts-alcohol-naming",
+    "title": "17.1: Naming Alcohols and Phenols",
+    "url": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_%28OpenStax%29/17%3A_Alcohols_and_Phenols/17.01%3A_Naming_Alcohols_and_Phenols",
+    "section": "Alcohol classification and nomenclature",
+    "keywords": ["alcohol", "phenol", "nomenclature", "iupac", "primary alcohol", "secondary alcohol", "tertiary alcohol", "classification"],
+    "summary": "Explains the structural distinction between alcohols and phenols and the primary, secondary, and tertiary classification based on the carbon that bears the hydroxyl group. Covers naming alcohols and phenols."
+  },
+  {
+    "id": "libretexts-alcohol-phenol-properties",
+    "title": "17.2: Properties of Alcohols and Phenols",
+    "url": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_%28OpenStax%29/17%3A_Alcohols_and_Phenols/17.02%3A_Properties_of_Alcohols_and_Phenols",
+    "section": "Alcohol and phenol properties; acidity",
+    "keywords": ["phenol", "ethanol", "acidity", "acidic", "basic", "phenoxide", "resonance", "hydrogen bonding", "boiling point", "sodium hydroxide", "alkoxide"],
+    "summary": "Alcohols and phenols hydrogen-bond and are weak acids and bases. Phenols are much more acidic than alcohols because phenoxide is resonance-stabilized; electron-withdrawing and electron-donating substituents change phenol acidity."
+  },
+  {
+    "id": "libretexts-alcohol-preparation",
+    "title": "17.3: Preparation of Alcohols: A Review",
+    "url": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_%28OpenStax%29/17%3A_Alcohols_and_Phenols/17.03%3A_Preparation_of_Alcohols-_A_Review",
+    "section": "Preparation of alcohols from alkenes and other groups",
+    "keywords": ["preparation of alcohol", "hydration", "hydroboration", "hydroboration oxidation", "oxymercuration", "markovnikov", "anti markovnikov", "alkene", "alcohol synthesis"],
+    "summary": "Reviews alcohol synthesis from alkenes, alkyl halides, aldehydes, ketones, esters, and related functional groups. Hydroboration-oxidation gives syn, anti-Markovnikov hydration, while oxymercuration-demercuration gives Markovnikov hydration."
+  },
+  {
+    "id": "libretexts-alcohol-reduction",
+    "title": "17.4: Alcohols from Carbonyl Compounds: Reduction",
+    "url": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_%28OpenStax%29/17%3A_Alcohols_and_Phenols/17.04%3A_Alcohols_from_Carbonyl_Compounds_-_Reduction",
+    "section": "Reduction of carbonyl compounds to alcohols",
+    "keywords": ["reduction", "lithium aluminium hydride", "lialh4", "sodium borohydride", "nabh4", "aldehyde", "ketone", "ester", "primary alcohol", "secondary alcohol"],
+    "summary": "Explains reduction of aldehydes, ketones, carboxylic acids, and esters to alcohols. Aldehydes give primary alcohols, ketones give secondary alcohols, and stronger hydride reagents can reduce carboxylic-acid derivatives."
+  },
+  {
+    "id": "libretexts-grignard-alcohols",
+    "title": "17.5: Alcohols from Carbonyl Compounds: Grignard Reagents",
+    "url": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_%28OpenStax%29/17%3A_Alcohols_and_Phenols/17.05%3A_Alcohols_from_Carbonyl_Compounds_-_Grignard_Reagents",
+    "section": "Grignard additions to carbonyl compounds",
+    "keywords": ["grignard", "rm gx", "carbonyl", "formaldehyde", "aldehyde", "ketone", "ester", "tertiary alcohol", "workup", "dry ether"],
+    "summary": "Grignard reagents add as carbon nucleophiles to carbonyl compounds. Addition to formaldehyde gives primary alcohols, aldehydes give secondary alcohols, and ketones or esters give tertiary alcohols. Esters receive two additions before acidic work-up."
+  },
+  {
+    "id": "libretexts-alcohol-reactions",
+    "title": "17.6: Reactions of Alcohols",
+    "url": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_%28OpenStax%29/17%3A_Alcohols_and_Phenols/17.06%3A_Reactions_of_Alcohols",
+    "section": "Substitution, dehydration, and esterification of alcohols",
+    "keywords": ["alcohol reaction", "dehydration", "elimination", "alkene", "carbocation", "rearrangement", "substitution", "hcl", "hbr", "esterification", "tosylate"],
+    "summary": "Covers conversion of alcohols into alkyl halides or tosylates, acid-catalysed dehydration to alkenes, and ester formation. The mechanism and outcome depend on alcohol substitution and reaction conditions."
+  },
+  {
+    "id": "libretexts-alcohol-halides",
+    "title": "13.13: Reactions with Phosphorus Halides and Thionyl Chloride",
+    "url": "https://chem.libretexts.org/Courses/Chabot_College/Chem_12A%3A_Organic_Chemistry_Fall_2022/13%3A_Properties_and_Reactions_of_Alcohols/13.13%3A_Reactions_with_Phosphorus_Halides_and_Thionyl_Chloride",
+    "section": "Conversion of alcohols to alkyl halides",
+    "keywords": ["alcohol", "phosphorus halide", "pcl3", "pcl5", "pbr3", "thionyl chloride", "socl2", "alkyl halide", "inversion", "sn2", "rearrangement"],
+    "summary": "Phosphorus halides and thionyl chloride convert alcohols into alkyl halides by first making the hydroxyl group a better leaving group. PBr3 and SOCl2 are useful for avoiding strongly acidic conditions and generally proceed through backside substitution with inversion."
+  },
+  {
+    "id": "libretexts-alcohol-oxidation",
+    "title": "17.7: Oxidation of Alcohols",
+    "url": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_%28OpenStax%29/17%3A_Alcohols_and_Phenols/17.07%3A_Oxidation_of_Alcohols",
+    "section": "Oxidation of primary, secondary, and tertiary alcohols",
+    "keywords": ["oxidation", "pcc", "jones", "chromic acid", "dichromate", "kmno4", "primary alcohol", "secondary alcohol", "tertiary alcohol", "aldehyde", "ketone", "carboxylic acid"],
+    "summary": "Primary alcohols oxidize to aldehydes or carboxylic acids depending on conditions; secondary alcohols oxidize to ketones. Tertiary alcohols normally do not react with common oxidants because oxidation would require carbon-carbon bond cleavage."
+  },
+  {
+    "id": "libretexts-lucas-test",
+    "title": "10.5: Preparing Alkyl Halides from Alcohols",
+    "url": "https://chem.libretexts.org/Courses/Sonoma_State_University/SSU_Chem_335A/Material_for_Exam_3/Unit_10%3A_Organohalides/10.5_Preparing_Alkyl_Halides_from_Alcohols",
+    "section": "Lucas test and conversion of alcohols to alkyl halides",
+    "keywords": ["lucas", "lucas test", "zinc chloride", "zncl2", "concentrated hcl", "turbidity", "cloudy", "primary alcohol", "secondary alcohol", "tertiary alcohol", "sn1"],
+    "summary": "Lucas reagent is concentrated hydrochloric acid and zinc chloride. It converts alcohols to alkyl chlorides: tertiary alcohols react immediately and turn cloudy, secondary alcohols react more slowly, and primary alcohols do not react significantly at room temperature."
+  },
+  {
+    "id": "libretexts-iodoform-test",
+    "title": "The Triiodomethane (Iodoform) Reaction",
+    "url": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Supplemental_Modules_%28Organic_Chemistry%29/Alcohols/Reactivity_of_Alcohols/The_Triiodomethane_%28Iodoform%29_Reaction",
+    "section": "Iodoform test for alcohols and methyl ketones",
+    "keywords": ["iodoform", "triiodomethane", "haloform", "yellow precipitate", "ethanol", "methyl carbinol", "secondary alcohol", "methyl ketone", "iodine", "sodium hydroxide"],
+    "summary": "The iodoform test detects the CH3CH(OH) group in alcohols and methyl ketones. A positive result is pale-yellow triiodomethane precipitate. Ethanol is the only primary alcohol that gives this reaction; appropriate secondary alcohols do, but tertiary alcohols do not."
+  },
+  {
+    "id": "libretexts-phenol-reactions",
+    "title": "17.10: Reactions of Phenols",
+    "url": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_%28OpenStax%29/17%3A_Alcohols_and_Phenols/17.10%3A_Reactions_of_Phenols",
+    "section": "Electrophilic substitution and oxidation of phenols",
+    "keywords": ["phenol reaction", "bromination", "nitration", "sulfonation", "friedel crafts", "electrophilic substitution", "ortho para", "activating group", "quinone"],
+    "summary": "The phenolic hydroxyl group strongly activates the benzene ring and directs electrophilic aromatic substitution to ortho and para positions. Phenols undergo halogenation, nitration, sulfonation, and related reactions; oxidation gives quinones rather than ordinary alcohol oxidation products."
+  },
+  {
+    "id": "libretexts-phenol-preparation",
+    "title": "17.9: Phenols and Their Uses",
+    "url": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_%28OpenStax%29/17%3A_Alcohols_and_Phenols/17.09%3A_Phenols_and_Their_Uses",
+    "section": "Preparation of phenols: Dow and cumene processes",
+    "keywords": ["phenol preparation", "dow process", "cumene process", "cumene hydroperoxide", "chlorobenzene", "diazonium", "phenol", "acetone"],
+    "summary": "Phenol can be made industrially from chlorobenzene by the Dow process or from cumene. In the cumene process, oxidation gives cumene hydroperoxide, which undergoes acid treatment to form phenol and acetone."
+  },
+  {
+    "id": "libretexts-esterification",
+    "title": "Preparation of Esters",
+    "url": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Supplemental_Modules_%28Organic_Chemistry%29/Esters/Synthesis_of_Esters/Preparation_of_Esters",
+    "section": "Esterification of alcohols and phenols; aspirin connection",
+    "keywords": ["esterification", "ester", "alcohol", "phenol", "acyl chloride", "acid anhydride", "aspirin", "phenoxide", "etherification"],
+    "summary": "Alcohols and phenols form esters with acylating reagents. Phenol reacts more slowly than an alcohol, but conversion to phenoxide increases its reactivity. Acylation of the phenolic hydroxyl group in salicylic-acid chemistry is the key esterification idea used in aspirin synthesis."
+  },
+  {
+    "id": "libretexts-kolbe-reimer",
+    "title": "26.1: Aryl Oxygen Compounds",
+    "url": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Basic_Principles_of_Organic_Chemistry_%28Roberts_and_Caserio%29/26%3A_More_on_Aromatic_Compounds/26.01%3A_Aryl_Oxygen_Compounds",
+    "section": "Kolbe-Schmitt and Reimer-Tiemann reactions of phenols",
+    "keywords": ["phenol", "kolbe", "kolbe schmitt", "salicylic acid", "reimer tiemann", "salicylaldehyde", "chloroform", "dichlorocarbene", "phenoxide", "co2"],
+    "summary": "The Kolbe-Schmitt reaction carboxylates sodium phenoxide with carbon dioxide to give hydroxybenzoic-acid products, commonly ortho under the stated conditions. Reimer-Tiemann reaction of phenoxide with chloroform in base forms salicylaldehyde through dichlorocarbene chemistry."
+  },
+  {
+    "id": "libretexts-williamson-ether",
+    "title": "15.3: The Williamson Ether Synthesis",
+    "url": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Map%3A_Organic_Chemistry_%28Wade%29_Complete_and_Semesters_I_and_II/Map%3A_Organic_Chemistry_%28Wade%29/15%3A_Ethers_Epoxides_and_Thioethers/15.03%3A_The_Williamson_Ether_Synthesis",
+    "section": "Williamson ether synthesis",
+    "keywords": ["williamson", "ether", "ether synthesis", "alkoxide", "phenoxide", "alkyl halide", "sn2", "primary halide", "elimination", "e2"],
+    "summary": "Williamson ether synthesis is an SN2 reaction between an alkoxide or phenoxide nucleophile and an alkyl halide. A primary alkyl halide is preferred because secondary and tertiary substrates increasingly favour E2 elimination with strong alkoxide base."
+  },
+  {
+    "id": "libretexts-ether-cleavage",
+    "title": "18.3: Reactions of Ethers: Acidic Cleavage",
+    "url": "https://chem.libretexts.org/Bookshelves/Organic_Chemistry/Organic_Chemistry_%28OpenStax%29/18%3A_Ethers_and_Epoxides%3B_Thiols_and_Sulfides/18.03%3A_Reactions_of_Ethers_-_Acidic_Cleavage",
+    "section": "Acidic cleavage of ethers",
+    "keywords": ["ether cleavage", "hi", "hbr", "acidic cleavage", "aryl alkyl ether", "anisole", "phenol", "alkyl halide", "sn1", "sn2"],
+    "summary": "Ethers are cleaved by strong hydrogen halides. The pathway depends on the substituents: aryl-alkyl ethers produce phenol plus alkyl halide because aryl carbon does not undergo ordinary SN1 or SN2 cleavage."
+  },
+  {
+    "id": "libretexts-grignard-epoxides",
+    "title": "14.9: Reactions of Epoxides with Grignard and Organolithium Reagents",
+    "url": "https://chem.libretexts.org/Courses/Nassau_Community_College/Organic_Chemistry_I_and_II/14%3A_Ethers_Epoxides_and_Thioethers/14.09%3A_Reactions_of_Epoxides_with_Grignard_and_Organolithium_Reagents",
+    "section": "Grignard opening of epoxides",
+    "keywords": ["grignard", "epoxide", "ring opening", "ethylene oxide", "organolithium", "sn2", "primary alcohol", "less hindered carbon"],
+    "summary": "Grignard and organolithium reagents open epoxide rings by the same SN2-type pathway as base-promoted epoxide opening. Attack occurs at the less hindered carbon; ethylene oxide extends the carbon chain by two carbons and gives a primary alcohol after protonation."
+  },
+  {
+    "id": "libretexts-pinacol-rearrangement",
+    "title": "11.2: Pinacol Rearrangement",
+    "url": "https://chem.libretexts.org/Bookshelves/General_Chemistry/Book%3A_Structure_and_Reactivity_in_Organic_Biological_and_Inorganic_Chemistry_%28Schaller%29/V%3A__Reactivity_in_Organic_Biological_and_Inorganic_Chemistry_3/11%3A_Electrophilic_Rearrangement/11.02%3A_Pinacol_Rearrangement",
+    "section": "Pinacol-pinacolone rearrangement of vicinal diols",
+    "keywords": ["pinacol", "pinacolone", "vicinal diol", "glycol", "rearrangement", "acid", "carbocation", "1,2 shift", "migration", "ketone"],
+    "summary": "The pinacol rearrangement is an acid- or Lewis-acid-promoted reaction of a 1,2-diol. Protonation makes one hydroxyl group leave, then a 1,2 migration and carbonyl formation convert the diol into an aldehyde or ketone; intermediate stability guides the pathway."
+  }
+]
