@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowUp, BookOpen, PlayCircle, Sparkles, X } from "lucide-react";
+import { ArrowUp, BookOpen, Menu, PlayCircle, Sparkles, X } from "lucide-react";
 import type { ChatSession } from "@/lib/types";
 import { clsx } from "clsx";
 import { MarkdownMessage } from "@/components/MarkdownMessage";
@@ -15,6 +15,8 @@ type ChatPanelProps = {
   onOpenBook?: () => void;
   onOpenVideoChunk?: (chunkId: string) => void;
   onOpenBookChunk?: (chunkId: string) => void;
+  /** Only supplied on mobile — renders a hamburger button that opens the chat list drawer instead of the desktop sidebar. Its presence also signals "mobile context" to this component (e.g. hides the close-pane control, which is meaningless with a single always-open pane). */
+  onMenuClick?: () => void;
 };
 
 const STARTER_QUESTIONS = [
@@ -42,6 +44,7 @@ export function ChatPanel({
   onOpenBook,
   onOpenVideoChunk,
   onOpenBookChunk,
+  onMenuClick,
 }: ChatPanelProps) {
   const [draft, setDraft] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -83,11 +86,26 @@ export function ChatPanel({
   return (
     <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
       <header className="flex shrink-0 items-center justify-between border-b border-border-subtle px-5 py-3">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-foreground">{session.title}</p>
-          <p className="text-[11px] text-muted-2">
-            Vibrant Academy · Chemistry · Alcohols, Phenols &amp; Ethers
-          </p>
+        <div className="flex min-w-0 items-center gap-2">
+          {onMenuClick && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onMenuClick();
+              }}
+              className="-ml-1 shrink-0 rounded-md p-1 text-muted-2 hover:bg-surface-2 hover:text-foreground"
+              aria-label="Open chat list"
+            >
+              <Menu size={18} />
+            </button>
+          )}
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-foreground">{session.title}</p>
+            <p className="text-[11px] text-muted-2">
+              Vibrant Academy · Chemistry · Alcohols, Phenols &amp; Ethers
+            </p>
+          </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <div className="hidden items-center gap-1.5 rounded-full border border-border-subtle bg-surface px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider text-muted sm:flex">
@@ -101,7 +119,7 @@ export function ChatPanel({
                 e.stopPropagation();
                 onOpenVideo();
               }}
-              className="hidden rounded-md p-1 text-muted-2 hover:bg-surface-2 hover:text-foreground md:block"
+              className="rounded-md p-1 text-muted-2 hover:bg-surface-2 hover:text-foreground"
               aria-label="Open lecture clip"
               title="Open lecture clip"
             >
@@ -115,14 +133,14 @@ export function ChatPanel({
                 e.stopPropagation();
                 onOpenBook();
               }}
-              className="hidden rounded-md p-1 text-muted-2 hover:bg-surface-2 hover:text-foreground md:block"
+              className="rounded-md p-1 text-muted-2 hover:bg-surface-2 hover:text-foreground"
               aria-label="Open study reference"
               title="Open study reference"
             >
               <BookOpen size={14} />
             </button>
           )}
-          {onClose && (
+          {onClose && !onMenuClick && (
             <button
               type="button"
               onClick={(e) => {
@@ -183,7 +201,7 @@ export function ChatPanel({
                     <button
                       type="button"
                       onClick={() => onOpenVideoChunk(message.videoChunkId!)}
-                      className="hidden items-center gap-1 rounded-full border border-accent/35 bg-accent-dim px-2.5 py-1 text-[10px] font-semibold text-accent-strong md:inline-flex"
+                      className="inline-flex items-center gap-1 rounded-full border border-accent/35 bg-accent-dim px-2.5 py-1 text-[10px] font-semibold text-accent-strong"
                     >
                       <PlayCircle size={12} /> Lecture moment
                     </button>
@@ -192,7 +210,7 @@ export function ChatPanel({
                     <button
                       type="button"
                       onClick={() => onOpenBookChunk(message.bookChunkId!)}
-                      className="hidden items-center gap-1 rounded-full border border-border-strong bg-surface-2 px-2.5 py-1 text-[10px] font-semibold text-foreground md:inline-flex"
+                      className="inline-flex items-center gap-1 rounded-full border border-border-strong bg-surface-2 px-2.5 py-1 text-[10px] font-semibold text-foreground"
                     >
                       <BookOpen size={12} /> Study reference
                     </button>

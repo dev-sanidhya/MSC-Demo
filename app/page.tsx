@@ -16,6 +16,8 @@ import { PaneTree } from "@/components/PaneTree";
 import { VideoPanel } from "@/components/VideoPanel";
 import { BookPanel } from "@/components/BookPanel";
 import { ResizeHandle } from "@/components/ResizeHandle";
+import { MobileDrawer } from "@/components/MobileDrawer";
+import { MobileSheet } from "@/components/MobileSheet";
 import { bookChunks, videoChunks } from "@/lib/data";
 import { relatedBookChunks, relatedVideoChunks } from "@/lib/retrieval";
 import {
@@ -100,6 +102,13 @@ export default function Home() {
   const [videoPanelHeightPct, setVideoPanelHeightPct] = useState(74);
   const [thinkingSessionIds, setThinkingSessionIds] = useState<string[]>([]);
   const [isMobile, setIsMobile] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // On mobile the citation sheet covers the whole screen, so unlike the
+  // desktop side panel (which can safely auto-show whenever a new answer
+  // cites something) it must only open on an explicit tap — otherwise every
+  // answer with a citation would yank the just-written reply off-screen the
+  // instant it finishes streaming.
+  const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const [hasHydratedStorage, setHasHydratedStorage] = useState(false);
 
   useEffect(() => {
@@ -294,6 +303,19 @@ export default function Home() {
     setSessions((prev) => prev.map((s) => (s.id === sessionId ? { ...s, bookDismissed: true } : s)));
   }, [focusedSession]);
 
+  const handleMobileSelect = useCallback(
+    (id: string) => {
+      handleSelect(id);
+      setMobileMenuOpen(false);
+    },
+    [handleSelect]
+  );
+
+  const handleMobileNewChat = useCallback(() => {
+    handleNewChat();
+    setMobileMenuOpen(false);
+  }, [handleNewChat]);
+
   // Jumps to the exact chunk a given message cited — distinct from
   // handleSelectVideoChunk/handleSelectBookChunk (which always act on
   // whichever pane is currently focused, for the switcher pills in the
@@ -331,6 +353,42 @@ export default function Home() {
       )
     );
   }, []);
+
+  // Thin wrappers so the same "open this citation" actions used by the
+  // desktop side panel also surface the mobile sheet — but only on an
+  // explicit tap of one of these, never as a side effect of a new answer
+  // arriving (see mobileSheetOpen above).
+  const handleOpenVideoMobileAware = useCallback(
+    (sessionId: string) => {
+      handleOpenVideo(sessionId);
+      if (isMobile) setMobileSheetOpen(true);
+    },
+    [handleOpenVideo, isMobile]
+  );
+
+  const handleOpenBookMobileAware = useCallback(
+    (sessionId: string) => {
+      handleOpenBook(sessionId);
+      if (isMobile) setMobileSheetOpen(true);
+    },
+    [handleOpenBook, isMobile]
+  );
+
+  const handleOpenMessageVideoChunkMobileAware = useCallback(
+    (sessionId: string, chunkId: string) => {
+      handleOpenMessageVideoChunk(sessionId, chunkId);
+      if (isMobile) setMobileSheetOpen(true);
+    },
+    [handleOpenMessageVideoChunk, isMobile]
+  );
+
+  const handleOpenMessageBookChunkMobileAware = useCallback(
+    (sessionId: string, chunkId: string) => {
+      handleOpenMessageBookChunk(sessionId, chunkId);
+      if (isMobile) setMobileSheetOpen(true);
+    },
+    [handleOpenMessageBookChunk, isMobile]
+  );
 
   const asideRef = useRef<HTMLDivElement>(null);
 
@@ -557,11 +615,12 @@ export default function Home() {
             onSend={handleSend}
             onFocusPane={setFocusedPaneId}
             onClosePane={handleClosePane}
-            onOpenVideo={handleOpenVideo}
-            onOpenBook={handleOpenBook}
-            onOpenVideoChunk={handleOpenMessageVideoChunk}
-            onOpenBookChunk={handleOpenMessageBookChunk}
+            onOpenVideo={handleOpenVideoMobileAware}
+            onOpenBook={handleOpenBookMobileAware}
+            onOpenVideoChunk={handleOpenMessageVideoChunkMobileAware}
+            onOpenBookChunk={handleOpenMessageBookChunkMobileAware}
             onResizeSplit={handleResizeSplit}
+            onMenuClick={isMobile ? () => setMobileMenuOpen(true) : undefined}
           />
 
           {showAside && !isMobile && (
@@ -609,6 +668,43 @@ export default function Home() {
           )}
         </main>
       </div>
+
+      <MobileDrawer open={isMobile && mobileMenuOpen} onClose={() => setMobileMenuOpen(false)}>
+        <Sidebar
+          sessions={sessions}
+          activeSessionId={focusedSession?.id ?? ""}
+          openPaneIds={openPaneSessionIds}
+          collapsed={false}
+          width={280}
+          onToggleCollapsed={() => setMobileMenuOpen(false)}
+          onSelect={handleMobileSelect}
+          onNew={handleMobileNewChat}
+          onRename={handleRename}
+          onDelete={handleDeleteSession}
+        />
+      </MobileDrawer>
+
+      <MobileSheet
+        open={isMobile && mobileSheetOpen && showAside}
+        onClose={() => setMobileSheetOpen(false)}
+      >
+        {showVideo && (
+          <VideoPanel
+            chunk={activeVideoChunk}
+            chunks={videoChunkOptions}
+            onSelect={handleSelectVideoChunk}
+            onClose={handleCloseVideoPanel}
+          />
+        )}
+        {showBook && (
+          <BookPanel
+            chunk={activeBookChunk}
+            chunks={bookChunkOptions}
+            onSelect={handleSelectBookChunk}
+            onClose={handleCloseBookPanel}
+          />
+        )}
+      </MobileSheet>
     </DndContext>
   );
 }

@@ -22,6 +22,8 @@ type SharedProps = {
   onOpenVideoChunk: (sessionId: string, chunkId: string) => void;
   onOpenBookChunk: (sessionId: string, chunkId: string) => void;
   onResizeSplit: (splitId: string, index: number, deltaPercent: number) => void;
+  /** Only supplied on mobile; see ChatPanelProps for why. */
+  onMenuClick?: () => void;
 };
 
 type PaneTreeProps = SharedProps & { node: PaneNode };
@@ -80,6 +82,7 @@ function PaneLeafView({
   onOpenBook,
   onOpenVideoChunk,
   onOpenBookChunk,
+  onMenuClick,
 }: SharedProps & { node: PaneLeaf }) {
   const session = sessions.find((s) => s.id === node.sessionId);
   const isFocused = focusedPaneId === node.id;
@@ -101,6 +104,7 @@ function PaneLeafView({
         onOpenBook={session?.activeBookChunkId ? () => onOpenBook(session.id) : undefined}
         onOpenVideoChunk={session ? (chunkId) => onOpenVideoChunk(session.id, chunkId) : undefined}
         onOpenBookChunk={session ? (chunkId) => onOpenBookChunk(session.id, chunkId) : undefined}
+        onMenuClick={onMenuClick}
       />
       {isDraggingSession && <PaneDropZones leafId={node.id} canSplit={canSplit} />}
     </div>
